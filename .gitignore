@@ -3,6 +3,9 @@ GVT/GVT1/
 GVT/GVT2/*.mat
 GVT/tutorial_and_testing/
 windTunnel/Force_and_Strain.mldatx
-windTunnel/'2023 summer'/
+windTunnel/2023\ summer
+windTunnel/wtData
 responsePlots/
 TIME_*.mat
+ASEInputData_2023*
+oldgit.zip
