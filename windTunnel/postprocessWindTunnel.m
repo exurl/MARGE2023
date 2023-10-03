@@ -172,11 +172,18 @@ end
 for idxSpeed = 1:length(speeds)
 for idxInput = 1:length(inputs)
     data = dataObjs(:,idxInput,idxSpeed);
+
+    % filter the accel data
+    for idxRun = 1:3
+        data(idxRun).u(:,1:3) = accelFilter(data(idxRun).u(:,1:3),rate);
+    end
+
     savename = strcat('./wtData/','TIME_',data.fullTitle);
     save(savename,'data')
     disp(['saved ',char(savename)])
 end
 end
+clear data
 
 %% CONCATENATE TIME-DOMAIN DATA
 % ^combine data of 3 runs of each speed-input pair
