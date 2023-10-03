@@ -100,37 +100,28 @@ for idxInput = 1:length(inputs)
         %% IMPORT
         d = data(idxRun);
         
-        % find locations of relevant data in output.mat object
-        elemNames = string(getElementNames(d));
-        idxCmd = find(elemNames=="cmd");
-        idxGust = find(elemNames=="gust cmd");
-        idxPlant = find(elemNames=="Plant:1");
-        idxAcc1 = find(elemNames=="accel1_filtered");
-        idxAcc2 = find(elemNames=="accel2_filtered");
-        idxAcc3 = find(elemNames=="accel3_filtered");
-        idxStrain = find(elemNames=="microstrain");
-
-        % time vector
-        t = d{idxStrain}.Values.Time;
-        rate = (length(t)-1)/(t(end)-t(1));
-        
         % input data
-        u_elev = d{idxCmd}.Values.elevator.Data;
-        u_ail1 = d{idxCmd}.Values.aileron_1.Data;
-        u_ail2 = d{idxCmd}.Values.aileron_2.Data;
-        u_gust = d{idxGust}.Values.Data;
-        if(length(u_gust)==length(u_ail1)-1) % if gust missing a step
-            u_gust = [u_gust;0];
+        u_elev = get(d,'cmd').Values.elevator.Data;
+        u_ail1 = get(d,'cmd').Values.aileron_1.Data;
+        u_ail2 = get(d,'cmd').Values.aileron_2.Data;
+        u_gust = get(d,'gust cmd').Values.Data;
+        if(length(u_gust)==length(u_ail1)-1) % if gust data missing a point
+            u_gust = [u_gust;0]; % assume the missing point is the last one
         end
         u = [u_ail1,u_ail2,u_elev,u_gust];
+
+        % time vector
+        t = get(d,'cmd').Values.elevator.Time;
+        rate = (length(t)-1)/(t(end)-t(1));
         
         % output data 
-        theta = d{idxPlant}.Values.theta.Data;
-        thetaDot = [diff(theta)*rate;0];
-        acc1 = d{idxAcc1}.Values.Data;
-        acc2 = d{idxAcc2}.Values.Data;
-        acc3 = d{idxAcc3}.Values.Data;
-        strain = d{idxStrain}.Values.Data;
+        theta = get(d,'Plant:1').Values.theta.Data;
+        temp = diff(theta)*rate;
+        thetaDot = ([temp(1);temp]+[temp;temp(end)])/2; % numerical derivative
+        acc1 = get(d,'Plant:1').Values.accel_1.Data;
+        acc2 = get(d,'Plant:1').Values.accel_2.Data;
+        acc3 = get(d,'Plant:1').Values.accel_3.Data;
+        strain = get(d,'microstrain').Values.Data;
         y = [acc1,acc2,acc3,strain,theta,thetaDot];
 
         %% SHIFT AND TRUCATE
@@ -156,7 +147,7 @@ for idxInput = 1:length(inputs)
         t = t-t(1);
     
         % zero-mean everything
-        u = u-mean(u);
+        % u = u-mean(u); % do not zero input ! -2023/10/02 John's advice
         y = y-mean(y);
             % NOTE: if data is truncated again in the future, it will have
             % to be centered again as well
@@ -180,10 +171,10 @@ end
 %% SAVE TIME-DOMAIN DATA
 for idxSpeed = 1:length(speeds)
 for idxInput = 1:length(inputs)
-    % data = dataObjs(:,idxInput,idxSpeed);
-    % savename = strcat('./wtData/','TIME_',data.fullTitle);
-    % save(savename,'data')
-    % disp(['saved ',char(savename)])
+    data = dataObjs(:,idxInput,idxSpeed);
+    savename = strcat('./wtData/','TIME_',data.fullTitle);
+    save(savename,'data')
+    disp(['saved ',char(savename)])
 end
 end
 
@@ -231,7 +222,11 @@ clear combinedObjs;
 
 %% PLOT TIME-SERIES DATA
 for idxObj = 1:numel(dataObjs)
-    % plotTimeObj(dataObjs(idxObj))
+    % plot
+    plotTimeObj(dataObjs(idxObj))
+
+    % save plot
+    print(['TIME_',char(dataObjs(idxObj).fullTitle),'.png'],'-dpng','-r300')
 end
 
 %% COMPUTE FRFS
@@ -244,11 +239,11 @@ N = 2500; % window = 5 seconds (data rate is 500 Hz)
 w = [0.4,2]; % bandwidth, Hz
 
 % compute FRFs
-parfor idxSpeed = 1:6
+for idxSpeed = 1:6
 for idxInput = 1:4
 % for idxSpeed = 1:length(speeds)
 % for idxInput = 1:length(inputs)
-    frfObjs(idxInput,idxSpeed) = computeObjFRF(dataObjs(idxInput,idxSpeed),N,w);
+    frfObjs(idxInput,idxSpeed) = computeObjFRF(dataObjs(idxInput,idxSpeed),N,w,rate);
 end
 end
 
@@ -285,6 +280,7 @@ function plotTimeObj(dataObj)
 % plots time-response dataObj
 
     t = dataObj.t;
+    rate = (length(t)-1)/(t(end)-t(1)); 
     u = dataObj.u;
     y = dataObj.y;
 
@@ -295,8 +291,14 @@ function plotTimeObj(dataObj)
     % microstrain --> hundreds microstrain
     y(:,4) = y(:,4)*0.01;
 
+    % filter accels
+    for idxAcc = 1:3
+        y(:,idxAcc) = accelFilter(y(:,idxAcc),rate);
+    end
+
     % initailize figure
     fig = figure;
+    fig.Position = [0,0,1500,750];
     tl = tiledlayout(2,1);
 
     % labeling
@@ -389,7 +391,7 @@ function plotFrfObj(dataObjs)
 end
 
 %%
-function frfObj = computeObjFRF(dataObj,N,w)
+function frfObj = computeObjFRF(dataObj,N,w,rate)
 % INPUTs
     % dataObj : time-domain dataObj
     % N       : window size
@@ -411,8 +413,12 @@ function frfObj = computeObjFRF(dataObj,N,w)
                 w_acc = [1,2]; % Hz
     
                 % bandpass 0.6 to 20 Hz of time data
-                u = bandpass(u,[0.6,20],dataObj.rate);
-                y = bandpass(y,[0.6,20],dataObj.rate);
+                % u = bandpass(u,[0.6,20],dataObj.rate); % commented out on 2023-10-02
+                % y = bandpass(y,[0.6,20],dataObj.rate);
+
+                % bandpass 0.8 to 25 Hz of time data
+                u = accelFilter(u,rate);
+                y = accelFilter(y,rate);
 
                 % discard first 4 seconds of data
                 u = u(4*round(dataObj.rate):end);
@@ -445,4 +451,11 @@ function frfObj = computeObjFRF(dataObj,N,w)
     end
     % "robust" Hv FRF
     frfObj.Hv_FRF = 0.5*(frfObj.H1_FRF+frfObj.H2_FRF);
+end
+
+%%
+function xNew = accelFilter(x,rate)
+    w = [0.8,25];
+    [b_,a_] = butter(3,w/rate,'bandpass'); % see John DM 2023-10-02
+    xNew = filter(b_,a_,x);
 end
