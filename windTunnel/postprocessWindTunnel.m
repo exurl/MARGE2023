@@ -462,7 +462,10 @@ end
 
 %%
 function xNew = accelFilter(x,rate)
+% x : time-series signal
     w = [0.8,25];
     [b_,a_] = butter(3,w/rate,'bandpass'); % see John DM 2023-10-02
+        % NOTE: B_ and A_ are coefficients for a discrete (z-domain) TF
     xNew = filter(b_,a_,x);
+        % NOTE: filter takes coefficients for a discrete (z-domain) TF
 end

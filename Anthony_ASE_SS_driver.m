@@ -43,15 +43,13 @@ nLagG = 32;
     % lag terms.
 
 % viscosity corrections
-thicknessCorrection = 1;
-flapCorrections = [1,1,1,1]';
+thicknessCorrection = [1,1;1,1];
+flapCorrections = [1,1,1,1];
     % for [ail1, ail2, elev, vane]
 
 % flight condition
 rho = 1.293; % kg/m3
 q = [60 100 164 207 281 343];
-u = sqrt(2*q/rho);
-nSpeeds = length(u);
 
 % physical constants
 g = 9.80665; % m/s2
@@ -73,6 +71,10 @@ pitchId = [2003];
 ns = 2;
 zeta = zeta(1:ns);
 nLag = 0;
+
+%% INTERMEDIATE VARIABLES
+u = sqrt(2*q/rho);
+nSpeeds = length(u);
 
 %% PLANT MATRICES GENERATION
 plantObj = Anthony_ASE_SS_plant_generation(NS,NC,ns,nc,nLag,nLagG,gusts,u,rho,b,zeta,thicknessCorrection,flapCorrections);
@@ -176,8 +178,8 @@ Dc(5:6,:,:) = -Dc(5:6,:,:);
 % ------------------------------------------------------------------------+
 
 % John's CIFER correction
-% A(ns+1,2,:) = 1300*A(ns+1,2,:);
-% A(ns+1,2,:) = -5*A(ns+1,2,:);
+% A(ns+1,2,:) = 1300*A(ns+1,2,:); % effect: increase 1.45 hump in pitch out
+% A(ns+1,2,:) = -5*A(ns+1,2,:); % effect: negligible
 
 % flip gust input sign
 Bc(:,4,:) = -Bc(:,4,:);

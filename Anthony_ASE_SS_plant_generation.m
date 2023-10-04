@@ -15,8 +15,8 @@ function returnObj = Anthony_ASE_SS_plant_generation(NS,NC,ns,nc,nLag,nLagG,gust
     % rho                 : air density
     % b                   : ref. semi-span used to generate Roger matrices
     % zeta                : uncoupled damping ratios of structural modes
-    % thicknessCorrection : multiplier on aero forces
-    % flapCorrections     : multiplier on control surface aero forces
+    % thicknessCorrection : multiplier on columns of aero matrix (ns)x(ns)
+    % flapCorrections     : multiplier on control surface aero forces (1)x(nc)
 % OUTPUTS
     % A        : plant dynamics matrices
     % Bc       : control input dynamics matrices
@@ -39,7 +39,7 @@ assert(numel(u)>=0)
 assert(numel(rho)==1)
 assert(numel(b)==1)
 assert(numel(zeta)==ns)
-assert(numel(thicknessCorrection)==1)
+assert(all(size(thicknessCorrection)==[ns,ns]))
 assert(numel(flapCorrections)==nc)
 
 if(gusts==false)
@@ -47,6 +47,9 @@ if(gusts==false)
 end
 
 %% IMPORT DATA
+
+% total number of states
+nStates = (2*ns)+(nLag*ns)+(nLagG);
 
 % total number of modes
 N = NS+NC;
@@ -109,8 +112,8 @@ Csc = zeros(ns,nc); % (ns)x(nc)
 %% AERODYNAMIC MODEL DEFINITION
 
 % apply viscosity corrections
-Pbar = Pbar*thicknessCorrection;
-Pbar(1:ns,NS+1:NS+nc,:) = pagemtimes(Pbar(1:ns,NS+1:NS+nc,:),diag(flapCorrections));
+Pbar(1:ns,1:ns,:) = Pbar(1:ns,1:ns,:).*thicknessCorrection; % element-wise scaling
+Pbar(1:ns,NS+1:NS+nc,:) = Pbar(1:ns,NS+1:NS+nc,:).*flapCorrections; % column-wise scaling
 
 if(gusts)
     PbarG = PbarG*thicknessCorrection;
@@ -134,9 +137,6 @@ q = 0.5*rho*u.*u;
 omegaMax = max(kbar)*u/b;
 
 %% GENERATE {xDot} = [A]{x} + [Bc]{uc} + [BG]{uG}
-
-% total number of states
-nStates = (2*ns)+(nLag*ns)+(nLagG);
 
 % initialize state-space matrices
 A = zeros(nStates,nStates,nSpeeds);
