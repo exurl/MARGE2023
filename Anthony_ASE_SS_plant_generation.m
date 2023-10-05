@@ -2,8 +2,9 @@
 % Author: Anthony Su
 % Date: 2023-08-03
 
-function returnObj = Anthony_ASE_SS_plant_generation(NS,NC,ns,nc,nLag,nLagG,gusts,u,rho,b,zeta,thicknessCorrection,flapCorrections)
+function returnObj = Anthony_ASE_SS_plant_generation(nastranInputDir,NS,NC,ns,nc,nLag,nLagG,gusts,u,rho,b,zeta,thicknessCorrection,flapCorrections)
 % INPUTS
+    % nastranInputDir     : name of folder containing NASTRAN matrices
     % NS                  : # structural states in NASTRAN data
     % NC                  : # rigid control states in NASTRAN data
     % ns                  : # structural states in model output
@@ -28,6 +29,7 @@ function returnObj = Anthony_ASE_SS_plant_generation(NS,NC,ns,nc,nLag,nLagG,gust
 
 %% INPUT VALIDATION
 
+nastranInputDir = char(nastranInputDir);
 assert(numel(NS)==1)
 assert(numel(NC)==1)
 assert(numel(ns)==1 && ns<=NS)
@@ -59,25 +61,25 @@ M = load("ASEInputData\MHH_T.mat").MHH_T;
 K = load("ASEInputData\KHH_T.mat").KHH_T;
 
 % import NASTRAN aerodynamic influence matrices
-kBar = load('ASEInputData\k_bar.mat').k_bar;
-Pbar(:,:,1) = load('ASEInputData\A0.mat').A0;
-Pbar(:,:,2) = load('ASEInputData\A1.mat').A1;
-Pbar(:,:,3) = load('ASEInputData\A2.mat').A2;
+kBar = load([nastranInputDir,'k_bar.mat']).k_bar;
+Pbar(:,:,1) = load([nastranInputDir,'A0.mat']).A0;
+Pbar(:,:,2) = load([nastranInputDir,'A1.mat']).A1;
+Pbar(:,:,3) = load([nastranInputDir,'A2.mat']).A2;
 if(nLag>0)
-    D = load("ASEInputData\D.mat").D; % (N) x (nLag*N)
-    E = load("ASEInputData\E.mat").E; % (nLag*N) x (N)
+    D = load([nastranInputDir,'D.mat']).D; % (N) x (nLag*N)
+    E = load([nastranInputDir,'E.mat']).E; % (nLag*N) x (N)
     D = reshape(D,N,N,nLag); % (N) x (N) x (nLag)
     E = pagetranspose(reshape(E',N,N,nLag)); % (N) x (N) x (nLag)
     Pbar(:,:,4:3+nLag) = pagemtimes(D,E); % (N) x (N) x (nLag+3)
 end
 
 if(gusts)
-    PbarG(:,1,1) = load('ASEInputData\AG0.mat').AG0;
-    PbarG(:,1,2) = load('ASEInputData\AG1.mat').AG1;
-    PbarG(:,1,3) = load('ASEInputData\AG2.mat').AG2;
+    PbarG(:,1,1) = load([nastranInputDir,'AG0.mat']).AG0;
+    PbarG(:,1,2) = load([nastranInputDir,'AG1.mat']).AG1;
+    PbarG(:,1,3) = load([nastranInputDir,'AG2.mat']).AG2;
     if(nLagG>0)
-        DG = load("ASEInputData\DG.mat").DG; % (N) x (nLag*N)
-        EG = load("ASEInputData\EG.mat").EG; % (nLag*N) x (N)
+        DG = load([nastranInputDir,'DG.mat']).DG; % (N) x (nLag*N)
+        EG = load([nastranInputDir,'EG.mat']).EG; % (nLag*N) x (N)
         DG = reshape(DG,N,1,nLagG); % (N) x (N) x (nLag)
         EG = pagetranspose(reshape(EG',1,1,nLagG)); % (N) x (N) x (nLag)
         PbarG(:,:,4:3+nLagG) = pagemtimes(DG,EG); % (N) x (N) x (nLag+3)
@@ -85,7 +87,7 @@ if(gusts)
 end
 
 % lag terms used in aerodynamic influence matrices
-kbar = load('ASEInputData/k_bar.mat').k_bar;
+kbar = load([nastranInputDir,'k_bar.mat']).k_bar;
 for idxLag = 1:nLag
     betabar(idxLag)=1.7*max(kbar)*idxLag^2/(nLag+1)^2;
 end

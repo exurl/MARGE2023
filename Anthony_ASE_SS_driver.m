@@ -6,6 +6,9 @@ clear all
 
 %% INDEPENDENT VARIABLES/PARAMETERS
 
+% NASTRAN data folder
+nastranInputDir = 'ASEInputData_slow/';
+
 % filename to save state-space model as
 filename = "ASE_SS.mat";
 
@@ -77,7 +80,7 @@ u = sqrt(2*q/rho);
 nSpeeds = length(u);
 
 %% PLANT MATRICES GENERATION
-plantObj = Anthony_ASE_SS_plant_generation(NS,NC,ns,nc,nLag,nLagG,gusts,u,rho,b,zeta,thicknessCorrection,flapCorrections);
+plantObj = Anthony_ASE_SS_plant_generation(nastranInputDir,NS,NC,ns,nc,nLag,nLagG,gusts,u,rho,b,zeta,thicknessCorrection,flapCorrections);
 Ap = plantObj.A;
 Bpc = plantObj.Bc;
 if(gusts)
