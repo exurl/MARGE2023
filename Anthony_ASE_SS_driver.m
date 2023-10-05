@@ -7,7 +7,7 @@ clear all
 %% INDEPENDENT VARIABLES/PARAMETERS
 
 % NASTRAN data folder
-nastranInputDir = 'ASEInputData_slow/';
+nastranInputDir = 'ASEInputData/';
 
 % filename to save state-space model as
 filename = "ASE_SS.mat";
@@ -46,7 +46,7 @@ nLagG = 32;
     % lag terms.
 
 % viscosity corrections
-thicknessCorrection = [1,1;1,1];
+thicknessCorrection = [1,1; 1,1];
 flapCorrections = [1,1,1,1];
     % for [ail1, ail2, elev, vane]
 
@@ -72,8 +72,30 @@ pitchId = [2003];
 
 % small model (2-DOF 0-LAG)
 ns = 2;
-zeta = zeta(1:ns);
 nLag = 0;
+zeta = zeta(1:ns);
+nastranInputDir = 'ASEInputData_slow/';
+
+% pitching damping
+zeta(1) = zeta(1);
+
+% bending damping
+zeta(2) = zeta(2);
+
+% static aero corrections
+thicknessCorrection(1,1) = 1; % CM_alpha
+thicknessCorrection(1,2) = 1; % CM_eta
+thicknessCorrection(2,1) = 1; % CL_alpha
+thicknessCorrection(2,2) = 1; % CL_eta
+
+% dynamic aero corrections
+    % not implemented in plant generation yet
+
+% control surface aero corrections
+flapCorrections(1) = 1; % ail1
+flapCorrections(2) = 1; % ail2
+flapCorrections(3) = 1; % elev
+flapCorrections(4) = 1; % vane
 
 %% INTERMEDIATE VARIABLES
 u = sqrt(2*q/rho);
