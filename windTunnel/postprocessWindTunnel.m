@@ -175,9 +175,10 @@ for idxInput = 1:length(inputs)
 
     % filter the accel data
     for idxRun = 1:3
-        data(idxRun).u(:,1:3) = accelFilter(data(idxRun).u(:,1:3),rate);
+        data(idxRun).y(:,1:3) = accelFilter(data(idxRun).y(:,1:3),rate);
     end
 
+    % save time-domain data
     savename = strcat('./wtData/','TIME_',data.fullTitle);
     save(savename,'data')
     disp(['saved ',char(savename)])
@@ -262,11 +263,17 @@ clear frfObjs
 for idxSpeed = 1:length(speeds)
 for idxInput = 1:length(inputs)
     data = dataObjs(idxInput,idxSpeed);
+
+    % filter accel time-series data
+    data.y(:,1:3) = accelFilter(data.y(:,1:3),rate);
+
+    % save FRF+TIME objs
     savename = strcat('./wtData/','FRF_',data.fullTitle);
     save(savename,'data')
     disp(['saved ',char(savename)])
 end
 end
+clear data
 
 %% PLOT FRF DATA
 for idxSpeed = 1:length(speeds)
@@ -414,7 +421,7 @@ function frfObj = computeObjFRF(dataObj,N,w,rate)
             % accelerometer issue management ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
             if(any(idxOut==[1,2,3]))
                 u = dataObj.u(:,idxIn);
-                y = dataObj.y(:,idxIn);
+                y = dataObj.y(:,idxOut);
 
                 % constrain accelerometer freq response bandwidth
                 w_acc = [1,2]; % Hz
@@ -428,8 +435,8 @@ function frfObj = computeObjFRF(dataObj,N,w,rate)
                 y = accelFilter(y,rate);
 
                 % discard first 4 seconds of data
-                u = u(4*round(dataObj.rate):end);
-                y = y(4*round(dataObj.rate):end);
+                % u = u(4*round(dataObj.rate):end); % NO!!!! DONT DO THIS!!
+                % y = y(4*round(dataObj.rate):end);
 
                 % re-center data
                 u = u-mean(u);
