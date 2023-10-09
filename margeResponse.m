@@ -135,7 +135,7 @@ sys = ss(A,Bc,C,Dc);
 for idxSpeed = 1:nSpeeds
     sys_ = sys(:,:,idxSpeed);
     % omega = logspace(-0.5,1.5,201); % Hz
-    omega = linspace(0.5,2); % Hz
+    omega = linspace(0.4,2); % Hz
     [mag(:,:,:,idxSpeed),phase(:,:,:,idxSpeed),] = bode(sys_,omega*2*pi);
         % indices of mag and phase are (idxOutput,idxInput,:,idxSpeed)
 end

@@ -136,8 +136,14 @@ function plotFreq(ssObjs,expObjs,q)
             ax = nexttile((idxOut-1)*nInputs+idxIn);
             
             % plot experiment
-            plot(expObj.freq(:,idxOut),abs(expObj.Hv_FRF(:,idxOut)),'-k','DisplayName','experiment')
+            % plot(expObj.freq(:,idxOut),abs(expObj.Hv_FRF(:,idxOut)),'-k','DisplayName','experiment')
+            b_ = [abs(expObj.Hv_FRF(:,idxOut)-expObj.H1_FRF(:,idxOut)),abs(expObj.Hv_FRF(:,idxOut)-expObj.H2_FRF(:,idxOut))];
+            [lineObj_,patchObj_] = boundedline(expObj.freq(:,idxOut),abs(expObj.Hv_FRF(:,idxOut)),b_,'-k');
+            set(lineObj_,'DisplayName','experiment Hv FRF')
+            set(patchObj_,'HandleVisibility','off')
             hold on
+            % plot(expObj.freq(:,idxOut),abs(expObj.H1_FRF(:,idxOut)),'--k','DisplayName','experiment H1')
+            % plot(expObj.freq(:,idxOut),abs(expObj.H2_FRF(:,idxOut)),':k','DisplayName','experiment H2')
 
             % plot state-space model
             plot(ssObj.freq(:,idxOut),abs(ssObj.Hv_FRF(:,idxOut)),'-r','DisplayName','model')

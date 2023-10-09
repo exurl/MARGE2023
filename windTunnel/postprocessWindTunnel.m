@@ -425,10 +425,8 @@ function frfObj = computeObjFRF(dataObj,N,w,rate)
 
                 % constrain accelerometer freq response bandwidth
                 w_acc = [1,2]; % Hz
-    
-                % bandpass 0.6 to 20 Hz of time data
-                % u = bandpass(u,[0.6,20],dataObj.rate); % commented out on 2023-10-02
-                % y = bandpass(y,[0.6,20],dataObj.rate);
+                    % ^John said accel data only valid between 1-2 Hz.
+                    %  outside this, H1 and H2 diverge.
 
                 % bandpass 0.8 to 25 Hz of time data
                 u = accelFilter(u,rate);
@@ -474,5 +472,5 @@ function xNew = accelFilter(x,rate)
     [b_,a_] = butter(3,w/rate,'bandpass'); % see John DM 2023-10-02
         % NOTE: B_ and A_ are coefficients for a discrete (z-domain) TF
     xNew = filter(b_,a_,x);
-        % NOTE: filter takes coefficients for a discrete (z-domain) TF
+        % NOTE: filter() takes coefficients for a discrete (z-domain) TF
 end

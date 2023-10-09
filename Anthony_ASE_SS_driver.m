@@ -127,7 +127,7 @@ else
     DG = [];
 end
 
-%% RE-ORDER INPUT VECTOR ORDER
+%% RE-ORDER INPUT VECTOR VARIABLES
 
 % rearrange order of inputs for [Bc], [Dc] from {u1 u2 ... u1Dot u2Dot
 % ... u1DDot u2DDot ...} to instead become {u1 u1Dot u1DDot u2 ...}
