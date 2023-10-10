@@ -70,19 +70,23 @@ pitchId = [2003];
 %% MODEL TUNING CHANGES (PRE-GENERATION)
 % ------------------------------------------------------------------------+
 
+% slow input data
+nastranInputDir = 'ASEInputData_slow/';
+nLag = 2;
+
 % small model (2-DOF 0-LAG)
 ns = 2;
 nLag = 0;
 zeta = zeta(1:ns);
-nastranInputDir = 'ASEInputData_slow/';
 
 % pitching damping
-zeta(1) = zeta(1);
+zeta(1) = zeta(1)*1;
 
 % bending damping
-zeta(2) = zeta(2);
+zeta(2) = zeta(2)*2;
 
 % static aero corrections
+thicknessCorrection = ones(ns);
 thicknessCorrection(1,1) = 1; % CM_alpha
 thicknessCorrection(1,2) = 1; % CM_eta
 thicknessCorrection(2,1) = 1; % CL_alpha
@@ -92,10 +96,10 @@ thicknessCorrection(2,2) = 1; % CL_eta
     % not implemented in plant generation yet
 
 % control surface aero corrections
-flapCorrections(1) = 1; % ail1
-flapCorrections(2) = 1; % ail2
-flapCorrections(3) = 1; % elev
-flapCorrections(4) = 1; % vane
+flapCorrections(1) = 0.6; % ail1
+flapCorrections(2) = 0.6; % ail2
+flapCorrections(3) = 0.6; % elev
+flapCorrections(4) = 5; % vane
 
 %% INTERMEDIATE VARIABLES
 u = sqrt(2*q/rho);
@@ -221,3 +225,11 @@ else
     save(filename,'A','Bc','C','Dc','omegaMax','u','NS','NC','ns','nc','nLag','nLagG','b','thicknessCorrection','flapCorrections','rho','g','accIds','strainId','pitchId')
 end
 disp(['model generated and saved at ',char(filename)])
+
+%% CALL RESPONSE ANALYSIS SCRIPTS
+
+% compute FRFs
+margeResponse
+
+% plot FRFs against experiment
+margeFreqExperiment

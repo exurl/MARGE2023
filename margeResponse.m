@@ -34,10 +34,10 @@ rho = aseModel.rho;
 u = aseModel.u';
 q = 0.5*rho*u.*u;
 
-nSpeeds = length(u)
-nStates = size(A,1)
-nInputs = size(Bc,2)
-nOutputs = size(C,1)
+nSpeeds = length(u);
+nStates = size(A,1);
+nInputs = size(Bc,2);
+nOutputs = size(C,1);
 
 % I/O names
 inputNames = ["aileron 1","aileron 2","elevator","gust vane"];

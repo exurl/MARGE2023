@@ -2,52 +2,70 @@
 % Author: Anthony Su
 % Date: 2023-08-17
 
-close all
+% close all
 clear all
 
+% speed indices of interest: pick which speeds to plot
+speedIdxsInterest = [1,2,3,4,5,6];
+
 %% IMPORT EXPERIMENTAL DATA
+
+% input validation
+assert(all(speedIdxsInterest>=1) & all(speedIdxsInterest<=6) & all(round(speedIdxsInterest)==speedIdxsInterest))
 
 % speeds
 q = [60,100,164,207,281,343];
 
 % q60
+if(any(speedIdxsInterest==1))
 expObjs(1,1) = load('windTunnel\wtData\FRF_q60_A1S5.mat').data;
 expObjs(2,1) = load('windTunnel\wtData\FRF_q60_A2S5.mat').data;
 expObjs(3,1) = load('windTunnel\wtData\FRF_q60_ES2.mat').data;
 expObjs(4,1) = load('windTunnel\wtData\FRF_q60_GD4.mat').data;
+end
 
 % q100
+if(any(speedIdxsInterest==2))
 expObjs(1,2) = load('windTunnel\wtData\FRF_q100_A1S5.mat').data;
 expObjs(2,2) = load('windTunnel\wtData\FRF_q100_A2S5.mat').data;
 expObjs(3,2) = load('windTunnel\wtData\FRF_q100_ES2.mat').data;
 expObjs(4,2) = load('windTunnel\wtData\FRF_q100_GD4.mat').data;
+end
 
 % q164
+if(any(speedIdxsInterest==3))
 expObjs(1,3) = load('windTunnel\wtData\FRF_q164_A1S5.mat').data;
 expObjs(2,3) = load('windTunnel\wtData\FRF_q164_A2S5.mat').data;
 expObjs(3,3) = load('windTunnel\wtData\FRF_q164_ES2.mat').data;
 expObjs(4,3) = load('windTunnel\wtData\FRF_q164_GD4.mat').data;
+end
 
 % q207
+if(any(speedIdxsInterest==4))
 expObjs(1,4) = load('windTunnel\wtData\FRF_q207_A1S5.mat').data;
 expObjs(2,4) = load('windTunnel\wtData\FRF_q207_A2S5.mat').data;
 expObjs(3,4) = load('windTunnel\wtData\FRF_q207_ES2.mat').data;
 expObjs(4,4) = load('windTunnel\wtData\FRF_q207_GD4.mat').data;
+end
 
 % q281
+if(any(speedIdxsInterest==5))
 expObjs(1,5) = load('windTunnel\wtData\FRF_q281_A1S5.mat').data;
 expObjs(2,5) = load('windTunnel\wtData\FRF_q281_A2S5.mat').data;
 expObjs(3,5) = load('windTunnel\wtData\FRF_q281_ES2.mat').data;
 expObjs(4,5) = load('windTunnel\wtData\FRF_q281_GD4.mat').data;
+end
 
 % q343
+if(any(speedIdxsInterest==6))
 expObjs(1,6) = load('windTunnel\wtData\FRF_q343_A1S3p5.mat').data;
 expObjs(2,6) = load('windTunnel\wtData\FRF_q343_A2S3p5.mat').data;
 expObjs(3,6) = load('windTunnel\wtData\FRF_q343_ES1.mat').data;
 expObjs(4,6) = load('windTunnel\wtData\FRF_q343_GD4.mat').data;
+end
 
 % take only relevant FRFs from each experiment
-for idxSpeed = 1:6
+for idxSpeed = speedIdxsInterest
 for idxInput = 1:4
     obj.freq = squeeze(expObjs(idxInput,idxSpeed).freq(:,idxInput,:));
     obj.H1_FRF = squeeze(expObjs(idxInput,idxSpeed).H1_FRF(:,idxInput,:));
@@ -66,7 +84,7 @@ clear newExpObjs
 ssSuperObjs = load('FRF_ASE_SS.mat').dataObjs; % (1)x(6) array corresponding to speeds
 
 % break each obj into 4 inputs
-for idxSpeed = 1:6
+for idxSpeed = speedIdxsInterest
     for idxInput = 1:4
         obj.freq = squeeze(ssSuperObjs(idxSpeed).freq(:,idxInput,:));
         obj.H1_FRF = squeeze(ssSuperObjs(idxSpeed).H1_FRF(:,idxInput,:));
@@ -81,8 +99,7 @@ end
 %% PLOT
 
 % plot for each speed
-for idxSpeed = 1:6
-% for idxSpeed = 6 % plot q343 only
+for idxSpeed = speedIdxsInterest
     plotFreq(ssObjs(:,idxSpeed),expObjs(:,idxSpeed),q(idxSpeed))
 end
 
@@ -91,6 +108,21 @@ wantSave = input("SAVE PLOTS? Y/N: ",'s');
 if(wantSave=='Y')
     saveName = input("TYPE THE PLOT NAMING SUFFIX FOR SAVING THIS MODEL: ",'s');
 
+    % get only relevant plots
+    rootObj = groot;
+    figs = [rootObj.Children];
+    for i = 1:length(figs)
+        try
+            figMask(i) = isequal(figs(i).Children(1).Children(1).String,{'experiment Hv FRF','model'});
+        catch
+            figMask(i) = false;
+        end
+    end
+    figNumbers = [figs(figMask).Number];
+    if(length(figNumbers)>6)
+        error('too many relevant plots open; not sure which ones to save!')
+    end
+
     % create directory
     dirPath = ['./responsePlots/',saveName,'/'];
     if(~isfolder(dirPath))
@@ -98,9 +130,10 @@ if(wantSave=='Y')
     end
 
     % save in directory
-    for idxSpeed = 1:6
-        figure(idxSpeed)
+    for idxSpeed = length(speedIdxsInterest)
+        figure(figNumbers(idxSpeed))
         print([dirPath,'FRFCOMPARE_',saveName,'_q',char(num2str(q(idxSpeed))),'.png'],'-dpng','-r300')
+        disp(['saved ',dirPath])
     end
 end
 

@@ -169,22 +169,22 @@ end
 end
 
 %% SAVE TIME-DOMAIN DATA
-for idxSpeed = 1:length(speeds)
-for idxInput = 1:length(inputs)
-    data = dataObjs(:,idxInput,idxSpeed);
-
-    % filter the accel data
-    for idxRun = 1:3
-        data(idxRun).y(:,1:3) = accelFilter(data(idxRun).y(:,1:3),rate);
-    end
-
-    % save time-domain data
-    savename = strcat('./wtData/','TIME_',data.fullTitle);
-    save(savename,'data')
-    disp(['saved ',char(savename)])
-end
-end
-clear data
+% for idxSpeed = 1:length(speeds)
+% for idxInput = 1:length(inputs)
+%     data = dataObjs(:,idxInput,idxSpeed);
+% 
+%     % filter the accel data
+%     for idxRun = 1:3
+%         data(idxRun).y(:,1:3) = accelFilter(data(idxRun).y(:,1:3),rate);
+%     end
+% 
+%     % save time-domain data
+%     savename = strcat('./wtData/','TIME_',data.fullTitle);
+%     save(savename,'data')
+%     disp(['saved ',char(savename)])
+% end
+% end
+% clear data
 
 %% CONCATENATE TIME-DOMAIN DATA
 % ^combine data of 3 runs of each speed-input pair
@@ -230,11 +230,13 @@ clear combinedObjs;
 
 %% PLOT TIME-SERIES DATA
 for idxObj = 1:numel(dataObjs)
-    % plot
-    plotTimeObj(dataObjs(idxObj))
-
-    % save plot
-    print(['TIME_',char(dataObjs(idxObj).fullTitle),'.png'],'-dpng','-r300')
+    % % plot
+    % plotTimeObj(dataObjs(idxObj))
+    % 
+    % % save plot
+    % savename = ['TIME_',char(dataObjs(idxObj).fullTitle),'.png'];
+    % print(savename,'-dpng','-r300')
+    % disp(['saved ',savename])
 end
 
 %% COMPUTE FRFS
@@ -280,10 +282,12 @@ for idxSpeed = 1:length(speeds)
     speed = idxSpeed;
 
     % plot it
-    plotFrfObj(dataObjs(:,idxSpeed))
+    plotFrfObj(dataObjs(:,idxSpeed),false)
 
     % save plot
-    print(['FRF_q',char(speeds(idxSpeed)),'.png'],'-dpng','-r300')
+    savename = ['FRF_q',char(speeds(idxSpeed)),'.png'];
+    print(savename,'-dpng','-r300')
+    disp(['saved ',savename])
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -337,10 +341,11 @@ function plotTimeObj(dataObj)
 end
 
 %%
-function plotFrfObj(dataObjs)
+function plotFrfObj(dataObjs,isLog)
 % INPUTS:
     % dataObj : array of 4 dataObj, each corresponding to different inputs
     %           in order of ail1, ail2, elev, gust
+    % isLog   : boolean, whether want plot y-axis to be log
     
     % define convenience variables
     nOutputs = size(dataObjs(1).y,2);
@@ -354,7 +359,11 @@ function plotFrfObj(dataObjs)
     % figure labeling
     title(tl,['q=',num2str(dataObjs(1).q)],'FontSize',24,'Interpreter','none');
     xlabel(tl,'Frequency (Hz)','FontSize',18);
-    ylabel(tl,'Magnitude (dB)','FontSize',18);
+    if(isLog)
+        ylabel(tl,'Magnitude (dB)','FontSize',18);
+    else
+        ylabel(tl,'Magnitude','FontSize',18);
+    end
 
     % for each output,
     for idxOut = 1:nOutputs
@@ -368,9 +377,11 @@ function plotFrfObj(dataObjs)
         mag_Hv = abs(dataObj.Hv_FRF(:,idxIn,idxOut));
 
         % convert magnitude to dB
-        mag_H1 = mag2db(mag_H1);
-        mag_H2 = mag2db(mag_H2);
-        mag_Hv = mag2db(mag_Hv);
+        if(isLog)
+            mag_H1 = mag2db(mag_H1);
+            mag_H2 = mag2db(mag_H2);
+            mag_Hv = mag2db(mag_Hv);
+        end
 
         % initialize tile
         ax = nexttile();
