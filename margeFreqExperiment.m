@@ -122,6 +122,7 @@ if(wantSave=='Y')
     if(length(figNumbers)>6)
         error('too many relevant plots open; not sure which ones to save!')
     end
+    figNumbers = sort(figNumbers);
 
     % create directory
     dirPath = ['./responsePlots/',saveName,'/'];
@@ -130,10 +131,11 @@ if(wantSave=='Y')
     end
 
     % save in directory
-    for idxSpeed = length(speedIdxsInterest)
+    for idxSpeed = 1:length(speedIdxsInterest)
         figure(figNumbers(idxSpeed))
-        print([dirPath,'FRFCOMPARE_',saveName,'_q',char(num2str(q(idxSpeed))),'.png'],'-dpng','-r300')
-        disp(['saved ',dirPath])
+        savename = [dirPath,'FRFCOMPARE_',saveName,'_q',char(num2str(q(idxSpeed))),'.png'];
+        print(savename,'-dpng','-r300')
+        disp(['saved ',savename])
     end
 end
 
