@@ -3,6 +3,7 @@
 % Date: 2023-08-07
 
 clear all
+close all
 
 %% INDEPENDENT VARIABLES/PARAMETERS
 
@@ -42,11 +43,9 @@ b = 0.2; % m
 % aero model parameters
 nLag = 4;
 nLagG = 32;
-    % ^NOTE: there is no way to disable gusts; you can only disable gust
-    % lag terms.
 
 % viscosity corrections
-thicknessCorrection = [1,1; 1,1];
+staticAeroCorrection = [1,1; 1,1];
 flapCorrections = [1,1,1,1];
     % for [ail1, ail2, elev, vane]
 
@@ -70,31 +69,38 @@ pitchId = [2003];
 %% MODEL TUNING CHANGES (PRE-GENERATION)
 % ------------------------------------------------------------------------+
 
+% ==== MODEL SIZE ====
+% gusts on?
+gusts = false;
 % slow input data
 nastranInputDir = 'ASEInputData_slow/';
-nLag = 2;
-
+nLag = 0;
+nLagG = 6;
 % small model (2-DOF 0-LAG)
 ns = 2;
 nLag = 0;
 zeta = zeta(1:ns);
 
+% ==== NATURAL FREQUENCY REPLACEMENT ====
+omegan = zeros(1,ns+nc); % Hz
+% pitching frequency
+% omegan(1) = 
+% damping frequency
+% omegan(2) = 
+
+% ==== DAMPING RATIO SCALING ====
 % pitching damping
 zeta(1) = zeta(1)*1;
-
 % bending damping
-zeta(2) = zeta(2)*2;
+zeta(2) = zeta(2)*1;
 
+% ==== AERODYNAMICS ====
 % static aero corrections
-thicknessCorrection = ones(ns);
-thicknessCorrection(1,1) = 1; % CM_alpha
-thicknessCorrection(1,2) = 1; % CM_eta
-thicknessCorrection(2,1) = 1; % CL_alpha
-thicknessCorrection(2,2) = 1; % CL_eta
-
-% dynamic aero corrections
-    % not implemented in plant generation yet
-
+staticAeroCorrection = ones(ns);
+staticAeroCorrection(1,1) = 1; % CM_alpha
+staticAeroCorrection(1,2) = 1; % CM_eta
+staticAeroCorrection(2,1) = 1; % CL_alpha
+staticAeroCorrection(2,2) = 1; % CL_eta
 % control surface aero corrections
 flapCorrections(1) = 0.6; % ail1
 flapCorrections(2) = 0.6; % ail2
@@ -102,11 +108,17 @@ flapCorrections(3) = 0.6; % elev
 flapCorrections(4) = 5; % vane
 
 %% INTERMEDIATE VARIABLES
+
+% stiffness matrix replacement
+    % NOTE: omegan = sqrt(k/m) --> k = m*omegan^2, where m=1 in FEM
+kNew = omegan.^2;
+
+% flight conditions
 u = sqrt(2*q/rho);
 nSpeeds = length(u);
 
 %% PLANT MATRICES GENERATION
-plantObj = Anthony_ASE_SS_plant_generation(nastranInputDir,NS,NC,ns,nc,nLag,nLagG,gusts,u,rho,b,zeta,thicknessCorrection,flapCorrections);
+plantObj = Anthony_ASE_SS_plant_generation(nastranInputDir,NS,NC,ns,nc,nLag,nLagG,gusts,u,rho,b,zeta,staticAeroCorrection,flapCorrections,kNew);
 Ap = plantObj.A;
 Bpc = plantObj.Bc;
 if(gusts)
@@ -220,9 +232,9 @@ Dc(4,:,:) = -Dc(4,:,:);
 
 %% EXPORT MATRICES
 if(gusts)
-    save(filename,'A','Bc','BG','C','Dc','DG','omegaMax','u','NS','NC','ns','nc','nLag','nLagG','b','thicknessCorrection','flapCorrections','rho','g','accIds','strainId','pitchId')
+    save(filename,'A','Bc','BG','C','Dc','DG','omegaMax','u','NS','NC','ns','nc','nLag','nLagG','b','staticAeroCorrection','flapCorrections','rho','g','accIds','strainId','pitchId')
 else
-    save(filename,'A','Bc','C','Dc','omegaMax','u','NS','NC','ns','nc','nLag','nLagG','b','thicknessCorrection','flapCorrections','rho','g','accIds','strainId','pitchId')
+    save(filename,'A','Bc','C','Dc','omegaMax','u','NS','NC','ns','nc','nLag','nLagG','b','staticAeroCorrection','flapCorrections','rho','g','accIds','strainId','pitchId')
 end
 disp(['model generated and saved at ',char(filename)])
 
