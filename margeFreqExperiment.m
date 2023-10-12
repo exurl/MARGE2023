@@ -98,31 +98,10 @@ end
 
 %% PLOT
 
-% plot for each speed
-for idxSpeed = speedIdxsInterest
-    plotFreq(ssObjs(:,idxSpeed),expObjs(:,idxSpeed),q(idxSpeed))
-end
-
-% save plots
+% ask to save plots
 wantSave = input("SAVE PLOTS? Y/N: ",'s');
 if(wantSave=='Y')
     saveName = input("TYPE THE PLOT NAMING SUFFIX FOR SAVING THIS MODEL: ",'s');
-
-    % get only relevant plots
-    rootObj = groot;
-    figs = [rootObj.Children];
-    for i = 1:length(figs)
-        try
-            figMask(i) = isequal(figs(i).Children(1).Children(1).String,{'experiment Hv FRF','model'});
-        catch
-            figMask(i) = false;
-        end
-    end
-    figNumbers = [figs(figMask).Number];
-    if(length(figNumbers)>6)
-        error('too many relevant plots open; not sure which ones to save!')
-    end
-    figNumbers = sort(figNumbers);
 
     % create directory
     dirPath = ['./responsePlots/',saveName,'/'];
@@ -130,21 +109,67 @@ if(wantSave=='Y')
         mkdir(dirPath);
     end
 
+    % set plot visibility
+    visibility = 'off';
+else
+    visibility = 'on';
+end
+
+% plot for each speed
+for idxSpeed = speedIdxsInterest
+    % plot
+    plotFreq(ssObjs(:,idxSpeed),expObjs(:,idxSpeed),q(idxSpeed),visibility)
+
     % save in directory
-    for idxSpeed = 1:length(speedIdxsInterest)
-        figure(figNumbers(idxSpeed))
+    if(wantSave=='Y')
         savename = [dirPath,'FRFCOMPARE_',saveName,'_q',char(num2str(q(idxSpeed))),'.png'];
         print(savename,'-dpng','-r300')
         disp(['saved ',savename])
     end
 end
 
+% save plots
+% wantSave = input("SAVE PLOTS? Y/N: ",'s');
+% if(wantSave=='Y')
+%     saveName = input("TYPE THE PLOT NAMING SUFFIX FOR SAVING THIS MODEL: ",'s');
+% 
+%     % get only relevant plots
+%     rootObj = groot;
+%     figs = [rootObj.Children];
+%     for i = 1:length(figs)
+%         try
+%             figMask(i) = isequal(figs(i).Children(1).Children(1).String,{'experiment Hv FRF','model'});
+%         catch
+%             figMask(i) = false;
+%         end
+%     end
+%     figNumbers = [figs(figMask).Number];
+%     if(length(figNumbers)>6)
+%         error('too many relevant plots open; not sure which ones to save!')
+%     end
+%     figNumbers = sort(figNumbers);
+% 
+%     % create directory
+%     dirPath = ['./responsePlots/',saveName,'/'];
+%     if(~isfolder(dirPath))
+%         mkdir(dirPath);
+%     end
+% 
+%     % save in directory
+%     for idxSpeed = 1:length(speedIdxsInterest)
+%         figure(figNumbers(idxSpeed))
+%         savename = [dirPath,'FRFCOMPARE_',saveName,'_q',char(num2str(q(idxSpeed))),'.png'];
+%         print(savename,'-dpng','-r300')
+%         disp(['saved ',savename])
+%     end
+% end
+
 
 %%
 %% FUCTIONS
 %%
 
-function plotFreq(ssObjs,expObjs,q)
+function plotFreq(ssObjs,expObjs,q,visibility)
 % INPUTS: ssObjs and expObjs have fields freq, H1_FRF, H2_FRF, Hv_FRF
 % they have dims (nInputs) and internally the fields have dims (:,nOutputs)
 
@@ -155,7 +180,7 @@ function plotFreq(ssObjs,expObjs,q)
     inputNames = ["ail1 (deg)","ail2 (deg)","elev (deg)","gust vane (deg)"];
     
     % initialize plot
-    fig = figure;
+    fig = figure('visible',visibility);
     fig.Position(1) = 0;
     fig.Position(2) = 0;
     fig.Position(3) = 1920;
