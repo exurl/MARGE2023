@@ -6,7 +6,7 @@
 clear all
 
 % speed indices of interest: pick which speeds to plot
-speedIdxsInterest = [1,2,3,4,5,6];
+speedIdxsInterest = [4];
 
 %% IMPORT EXPERIMENTAL DATA
 
@@ -233,4 +233,12 @@ function plotFreq(ssObjs,expObjs,q,visibility)
     xlabel(tl,'Frequency (Hz)','FontSize',18)
     warning('off',char([])) % remove warning about linkaxes in next line
     linkaxes(tl.Children,'x') % unify x-axes
+
+    % grey out acc3 and pitchDot outputs which are unreliable
+    for idxIn = 1:nInputs
+        for idxOut = [3,6]
+            ax = nexttile((idxOut-1)*nInputs+idxIn);
+            ax.Color = [1,0.9,0.9];
+        end
+    end
 end

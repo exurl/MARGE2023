@@ -3,7 +3,7 @@
 % Date: 2023-08-07
 
 clear all
-close all
+% close all
 
 %% INDEPENDENT VARIABLES/PARAMETERS
 
@@ -90,22 +90,22 @@ omegan = zeros(1,ns+nc); % Hz
 
 % ==== DAMPING RATIO SCALING ====
 % pitching damping
-zeta(1) = zeta(1)*1;
+zeta(1) = zeta(1)*100;
 % bending damping
 zeta(2) = zeta(2)*1;
 
 % ==== AERODYNAMICS ====
 % static aero corrections
 staticAeroCorrection = ones(ns);
-staticAeroCorrection(1,1) = 1; % CM_alpha
+staticAeroCorrection(1,1) = 0.9; % CM_alpha
 staticAeroCorrection(1,2) = 1; % CM_eta
-staticAeroCorrection(2,1) = 1; % CL_alpha
-staticAeroCorrection(2,2) = 1; % CL_eta
+staticAeroCorrection(2,1) = 0.5; % CL_alpha
+staticAeroCorrection(2,2) = 1.5; % CL_eta
 % control surface aero corrections
 flapCorrections(1) = 0.6; % ail1
 flapCorrections(2) = 0.6; % ail2
 flapCorrections(3) = 0.6; % elev
-flapCorrections(4) = 5; % vane
+flapCorrections(4) = 4; % vane
 
 %% INTERMEDIATE VARIABLES
 
