@@ -77,7 +77,8 @@ bendPHIx = loadsPHI(4,:); % x-bending moment is 4th load DOF, N-m
     % ^note: this is only for the 15 structural modes (does not have control modes)
 
 % strain gauge calibration scaling
-strainMultiplier = 0.75;
+% strainMultiplier = 0.75; % original "calibration"
+strainMultiplier = 1; % modified 2023-10-19
 
 %% PITCH SENSOR DEFINITION
 
