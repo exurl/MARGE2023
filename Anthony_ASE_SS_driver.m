@@ -103,7 +103,7 @@ staticAeroCorrection(2,1) = 0.5; % CL_alpha
 staticAeroCorrection(2,2) = 1.5; % CL_eta
 % control surface aero corrections
 flapCorrections(1) = 0.6; % ail1
-flapCorrections(2) = 0.6; % ail2
+flapCorrections(2) = 0.7; % ail2
 flapCorrections(3) = 0.6; % elev
 flapCorrections(4) = 4; % vane
 
