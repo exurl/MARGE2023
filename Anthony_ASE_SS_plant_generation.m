@@ -2,23 +2,23 @@
 % Author: Anthony Su
 % Date: 2023-08-03
 
-function returnObj = Anthony_ASE_SS_plant_generation(nastranInputDir,NS,NC,ns,nc,nLag,nLagG,gusts,u,rho,b,zeta,staticAeroCorrection,flapCorrections,kNew)
+function returnObj = Anthony_ASE_SS_plant_generation(nastranInputDir,NS,NC,ns,nc,nLag,nLagG,gusts,u,rho,b,zeta,aeroCorrections,flapCorrections,kNew)
 % INPUTS
-    % nastranInputDir      : name of folder containing NASTRAN matrices
-    % NS                   : # structural states in NASTRAN data
-    % NC                   : # rigid control states in NASTRAN data
-    % ns                   : # structural states in model output
-    % nc                   : # rigid control states in model output
-    % nLag                 : # structure+control aero lag states
-    % nLagG                : # gust aero lag states
-    % gusts                : boolean, whether gusts are modeled
-    % u                    : air speeds (flight conditions)
-    % rho                  : air density
-    % b                    : ref. semi-span used to generate Roger matrices
-    % zeta                 : uncoupled damping ratios of structural modes
-    % staticAeroCorrection : multiplier on columns of aero matrix (ns)x(ns)
-    % flapCorrections      : multiplier on control surface aero forces (1)x(nc)
-    % kNew                 : manually set [K] diagonal elements
+    % nastranInputDir : name of folder containing NASTRAN matrices
+    % NS              : # structural states in NASTRAN data
+    % NC              : # rigid control states in NASTRAN data
+    % ns              : # structural states in model output
+    % nc              : # rigid control states in model output
+    % nLag            : # structure+control aero lag states
+    % nLagG           : # gust aero lag states
+    % gusts           : boolean, whether gusts are modeled
+    % u               : air speeds (flight conditions)
+    % rho             : air density
+    % b               : ref. semi-span used to generate Roger matrices
+    % zeta            : uncoupled damping ratios of structural modes
+    % aeroCorrections : multiplier on columns of aero matrix (ns)x(ns)x(3+nLag) or (ns)x(ns)
+    % flapCorrections : multiplier on control surface aero forces (1)x(nc)
+    % kNew            : manually set [K] diagonal elements
 % OUTPUTS
     % A        : plant dynamics matrices
     % Bc       : control input dynamics matrices
@@ -42,7 +42,7 @@ assert(numel(u)>=0)
 assert(numel(rho)==1)
 assert(numel(b)==1)
 assert(numel(zeta)==ns)
-assert(all(size(staticAeroCorrection)==[ns,ns]))
+assert(all(size(aeroCorrections)==[ns,ns,3+nLag]) || all(size(aeroCorrections)==[ns,ns]))
 assert(numel(flapCorrections)==nc)
 assert(numel(kNew)==ns+nc)
 
@@ -119,7 +119,7 @@ Csc = zeros(ns,nc); % (ns)x(nc)
 %% AERODYNAMIC MODEL DEFINITION
 
 % apply viscosity corrections
-Pbar(1:ns,1:ns,:) = Pbar(1:ns,1:ns,:).*staticAeroCorrection; % element-wise scaling
+Pbar(1:ns,1:ns,:) = Pbar(1:ns,1:ns,:).*aeroCorrections; % element-wise scaling
 Pbar(1:ns,NS+1:NS+nc,:) = Pbar(1:ns,NS+1:NS+nc,:).*flapCorrections; % column-wise scaling
 
 % decompose Roger matrices into structure & control components

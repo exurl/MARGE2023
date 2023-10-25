@@ -85,8 +85,13 @@ function residual = margeCompareFRF(ssObjs)
         expObjs = newExpObjs;
         clear newExpObjs;
 
-        % mask of bad data
-        badData = false(6,4,6); % idxs are (input,output,speed)
+        %% MASK OF BAD DATA
+
+        % initialize
+        badData = false(6,4,6); % idxs are (output,input,speed)
+
+        % ignore all accelerometers
+        badData(1:3,:,:) = true;
 
         % (!) (!) (!) (!) (!) (!) (!) (!) (!) (!) (!) (!) (!) (!) (!) (!)
         % RECORD BAD RUNS TO IGNORE HERE! (!) (!) (!) (!) (!) (!) (!) (!)
