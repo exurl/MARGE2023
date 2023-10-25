@@ -118,7 +118,8 @@ u = sqrt(2*q/rho);
 nSpeeds = length(u);
 
 %% PLANT MATRICES GENERATION
-plantObj = Anthony_ASE_SS_plant_generation(nastranInputDir,NS,NC,ns,nc,nLag,nLagG,gusts,u,rho,b,zeta,staticAeroCorrection,flapCorrections,kNew);
+plantObj = Anthony_ASE_SS_plant_generation(nastranInputDir,NS,NC,ns,nc,...
+    nLag,nLagG,gusts,u,rho,b,zeta,staticAeroCorrection,flapCorrections,kNew);
 Ap = plantObj.A;
 Bpc = plantObj.Bc;
 if(gusts)
@@ -134,7 +135,8 @@ u = plantObj.u;
 omegaMax = plantObj.omegaMax;
 
 %% OUTPUT MATRICES GENERATION
-outputObj = Anthony_ASE_SS_output_generation(NS,NC,ns,nc,gusts,nSpeeds,Ap,Bpc,BG,accIds,strainId,pitchId);
+outputObj = Anthony_ASE_SS_output_generation(NS,NC,ns,nc,...
+    gusts,nSpeeds,Ap,Bpc,BG,accIds,strainId,pitchId);
 Cp = outputObj.C;
 Dpc = outputObj.Dc;
 if(gusts)
@@ -232,16 +234,22 @@ Dc(4,:,:) = -Dc(4,:,:);
 
 %% EXPORT MATRICES
 if(gusts)
-    save(filename,'A','Bc','BG','C','Dc','DG','omegaMax','u','NS','NC','ns','nc','nLag','nLagG','b','staticAeroCorrection','flapCorrections','rho','g','accIds','strainId','pitchId')
+    save(filename,'A','Bc','BG','C','Dc','DG','omegaMax','u','NS','NC',...
+        'ns','nc','nLag','nLagG','b','staticAeroCorrection',...
+        'flapCorrections','rho','g','accIds','strainId','pitchId')
 else
-    save(filename,'A','Bc','C','Dc','omegaMax','u','NS','NC','ns','nc','nLag','nLagG','b','staticAeroCorrection','flapCorrections','rho','g','accIds','strainId','pitchId')
+    save(filename,'A','Bc','C','Dc','omegaMax','u','NS','NC','ns','nc',...
+        'nLag','nLagG','b','staticAeroCorrection','flapCorrections',...
+        'rho','g','accIds','strainId','pitchId')
 end
 disp(['model generated and saved at ',char(filename)])
 
 %% CALL RESPONSE ANALYSIS SCRIPTS
 
 % compute FRFs
-margeResponse
+sys = ss(A,Bc,C,Dc);
+omegaVec = 1:0.04:2; % Hz
+dataObjs = margeComputeFRF(sys,q,omegaVec);
 
 % plot FRFs against experiment
-margeFreqExperiment
+residual = margeCompareFRF(dataObjs);
