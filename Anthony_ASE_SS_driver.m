@@ -85,7 +85,7 @@ zeta = zeta(1:ns);
 omegan = zeros(1,ns+nc); % Hz
 % pitching frequency
 % omegan(1) = 
-% damping frequency
+% bending frequency
 % omegan(2) = 
 
 % ==== DAMPING RATIO SCALING ====
@@ -250,6 +250,10 @@ disp(['model generated and saved at ',char(filename)])
 sys = ss(A,Bc,C,Dc);
 omegaVec = 1:0.04:2; % Hz
 dataObjs = margeComputeFRF(sys,q,omegaVec);
+    % ^add extra argument 'ASE_SS' to save FRFs
 
 % plot FRFs against experiment
+% margeResponse
+
+% compute error from experiment
 residual = margeCompareFRF(dataObjs);
