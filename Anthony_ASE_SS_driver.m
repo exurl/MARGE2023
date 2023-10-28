@@ -249,11 +249,13 @@ disp(['model generated and saved at ',char(filename)])
 % compute FRFs
 sys = ss(A,Bc,C,Dc);
 omegaVec = 1:0.04:2; % Hz
-dataObjs = margeComputeFRF(sys,q,omegaVec);
-    % ^add extra argument 'ASE_SS' to save FRFs
+% dataObjs = margeComputeFRF(sys,q,omegaVec,'ASE_SS');
+dataObjs = margeComputeFRF(sys,q,omegaVec,'ASE_SS');
+    % ^argument 'ASE_SS' to save FRFs
 
 % plot FRFs against experiment
-% margeResponse
+margeResponse
+margeFreqExperiment
 
 % compute error from experiment
-residual = margeCompareFRF(dataObjs);
+% residual = margeCompareFRF(dataObjs);

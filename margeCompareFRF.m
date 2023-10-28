@@ -4,11 +4,12 @@
 
 % converted from margeFreqExperiment.m into a function on 10-24-2023
 
-function residual = margeCompareFRF(ssObjs)
+function [magError,phaseError] = margeCompareFRF(ssObjs)
 % INPUTS
     % dataObjs : array of time+freq data objects at various flight conditions
 % OUTPUTS
     % residual : a measure of error between state-space model and experiment
+    % error    : error of each omega/y/u/q combo
 
     nSpeeds = 6;
     nInputs = 4;
@@ -93,6 +94,9 @@ function residual = margeCompareFRF(ssObjs)
         % ignore all accelerometers
         badData(1:3,:,:) = true;
 
+        % ignore pitchDot (since pitch is already accounted for)
+        badData(6,:,:) = true;
+
         % (!) (!) (!) (!) (!) (!) (!) (!) (!) (!) (!) (!) (!) (!) (!) (!)
         % RECORD BAD RUNS TO IGNORE HERE! (!) (!) (!) (!) (!) (!) (!) (!)
         % (!) (!) (!) (!) (!) (!) (!) (!) (!) (!) (!) (!) (!) (!) (!) (!)
@@ -101,7 +105,8 @@ function residual = margeCompareFRF(ssObjs)
     %% COMPUTE RESIDUAL
 
     % initialize error matrix
-    error = zeros(nPoints,nOutputs,nInputs,nSpeeds);
+    magError = zeros(nPoints,nOutputs,nInputs,nSpeeds);
+    phaseError = zeros(nPoints,nOutputs,nInputs,nSpeeds);
 
     % compute error
     for idxSpeed = 1:nSpeeds
@@ -115,16 +120,18 @@ function residual = margeCompareFRF(ssObjs)
         frfSS = ssObjs(idxSpeed).Hv_FRF(:,idxInput,idxOutput);
 
         % interpolate experiment to get corresponding value
-        frfExp = interp1(freqExp,frfExp,freq,'makima','extrap'); % if runtime is long switch to linear interpolation
+        frfExp = interp1(freqExp,frfExp,freq,'makima','extrap'); % if runtime is long try switching to linear interpolation
 
         % error
-        error(:,idxOutput,idxInput,idxSpeed) = (frfSS-frfExp)./frfExp; % normalized error
+        magError(:,idxOutput,idxInput,idxSpeed) = ((abs(frfSS)-abs(frfExp))./abs(frfExp)).^2; % normalized magnitude error squared
+        phaseError(:,idxOutput,idxInput,idxSpeed) = (phase(frfSS)-phase(frfExp)).^2; % phase error squared
     end
     end
     end
     end
 
-    % residual as frobenius matrix norm of errors
-    residual = norm(error,'fro');
+    % phase error modulo 2pi
+    phaseError = mod(phaseError,2*pi);
+    phaseError(phaseError>pi) = 2*pi-phaseError(phaseError>pi);
 
-    end
+end

@@ -42,7 +42,11 @@ assert(numel(u)>=0)
 assert(numel(rho)==1)
 assert(numel(b)==1)
 assert(numel(zeta)==ns)
-assert(all(size(aeroCorrections)==[ns,ns,3+nLag]) || all(size(aeroCorrections)==[ns,ns]))
+try
+    assert(all(size(aeroCorrections)==[ns,ns,3+nLag]))
+catch
+    assert(all(size(aeroCorrections)==[ns,ns]))
+end
 assert(numel(flapCorrections)==nc)
 assert(numel(kNew)==ns+nc)
 

@@ -4,7 +4,7 @@
 
 % converted from Anthony_ASE_SS_driver.m into a function on 10-24-2023
 
-function residual = margeObjective(x,wantSave)
+function [residual,magError,phaseError] = margeObjective(x,mpWeight,wantSave)
 % INPUTS
     % x        : vector of tuning parameters
         % x(1) : bending natural frequency (Hz)
@@ -17,9 +17,12 @@ function residual = margeObjective(x,wantSave)
         % x(8:end) : column-wise elements of multipliers to [P0], then
         %            [P1], then [P2], etc. e.g. if [P] is 2x2x3, then
         %            x(8:end) has P111,P211,P121,P221,P112,P212,...
+    % mpWeight : ratio of magnitude error to phase error weight in residual
     % wantSave : boolean whether to save model. If blank, does not save
 % OUTPUTS
-    % residual: scalar measure of model's FRF error from truth (experiment)
+    % residual   : scalar measure of model's FRF error from truth (experiment)
+    % magError   : magntiude error of each y/u/q combo
+    % phaseError : phase error of each y/u/q combo
 
     %% INDEPENDENT VARIABLES/PARAMETERS
 
@@ -260,11 +263,17 @@ function residual = margeObjective(x,wantSave)
     
     % compute FRFs
     sys = ss(A,Bc,C,Dc);
-    omegaVec = 1:0.04:2; % Hz
+    omegaVec = 0.4:0.05:2; % Hz
     dataObjs = margeComputeFRF(sys,q,omegaVec);
 
-    % computer error from experiment
-    residual = margeCompareFRF(dataObjs);
+    % compute error from experiment
+    [magError,phaseError] = margeCompareFRF(dataObjs);
 
+    % compute residual
+    error = magError*sqrt(mpWeight) + phaseError/sqrt(mpWeight);
+    residual = norm(error,'fro');
+
+    % easy-read error return
+    % error = reshape([sum(abs(error),1)],6,4,6);
 
 end
