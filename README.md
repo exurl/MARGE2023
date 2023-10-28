@@ -21,6 +21,14 @@ Scripts for making and analyzing a model
 | margeFreqExpreriment.m | loads FRFs of state-space model (./FRF_ASE_SS.mat) and experiment (./windTunnel/wtData/FRF*) and plots comparison |
 | margeTimeExperiment.m | loads experimental time-series data (./windTunnel/wtData/TIME*) and simulates corresponding state-space response and plots comparison. Takes a few minutes to run |
 
+Scripts for optimization of a model
+| Name | Description |
+|---|---|
+| margeOptDriver.m | driver script for model optimization |
+| margeObjective.m | objective function which calls other functions below|
+| margeComputeFRF.m | computes model FRF |
+| margeCompareFRF.m | computes residual between model and experiment |
+
 Miscellaneous scripts
 | Name | Description |
 |---|---|
@@ -31,12 +39,4 @@ Miscellaneous scripts
 | plotMARGEnodesGVT.m | visualize GVT impact points on geometry |
 | strainCalibration.m | quick study on strain gauge output compared to linear beam theory |
 | czt_FRF.m | John's FRF generation function |
-| sysCOmpareJohn.m | compare my state-space model with John's CIFER state-space model |
-
-Scripts for optimization of a model
-| Name | Description |
-|---|---|
-| margeOptDriver.m | driver script for model optimization |
-| margeObjective.m | objective function which calls other functions below|
-| margeComputeFRF.m | computes model FRF |
-| margeCompareFRF.m | computes residual between model and experiment |
+| sysCompareJohn.m | compare my state-space model with John's CIFER state-space model |
