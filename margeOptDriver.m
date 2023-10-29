@@ -7,7 +7,7 @@ clear all
 clc
 
 % initialize 
-mpWeights = logspace(-1,3,9);
+mpWeights = logspace(-2,2,9);
 resDatabase = zeros(size(mpWeights));
 magErrorDatabase = zeros(size(mpWeights));
 phaseErrorDatabase = zeros(size(mpWeights));
@@ -81,6 +81,11 @@ for idxWeight = 1:length(mpWeights)
 
 end
 
+%% SAVE MODEL
+
+% save final model at equal weighting
+margeObjective(xDatabase(5,:),1,true);
+
 %% PLOT RESULT
 
 % plot pareto front
@@ -91,3 +96,5 @@ title('MARGE Optimal Solutions')
 xlabel('ratio of magnitude/phase error weights')
 ylabel('optimal residual')
 grid on
+ax = gca;
+ax.YLim(1) = 0;

@@ -93,13 +93,15 @@ function [magError,phaseError] = margeCompareFRF(ssObjs)
 
         % ignore all accelerometers
         badData(1:3,:,:) = true;
+            % ^NOTE: in the future when you remove this, make sure to add
+            % specific bad accelerometer FRFs below
 
         % ignore pitchDot (since pitch is already accounted for)
         badData(6,:,:) = true;
 
-        % (!) (!) (!) (!) (!) (!) (!) (!) (!) (!) (!) (!) (!) (!) (!) (!)
-        % RECORD BAD RUNS TO IGNORE HERE! (!) (!) (!) (!) (!) (!) (!) (!)
-        % (!) (!) (!) (!) (!) (!) (!) (!) (!) (!) (!) (!) (!) (!) (!) (!)
+        % q60 gust-->pitch
+        badData(5:6,4,1) = true;
+        
     end
 
     %% COMPUTE RESIDUAL

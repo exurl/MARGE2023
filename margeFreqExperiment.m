@@ -6,7 +6,7 @@
 clear all
 
 % speed indices of interest: pick which speeds to plot
-speedIdxsInterest = [4];
+speedIdxsInterest = [1,2,3,4,5,6];
 
 %% IMPORT EXPERIMENTAL DATA
 

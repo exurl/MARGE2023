@@ -31,10 +31,9 @@ Dc = aseModel.Dc;
 
 omegaMax = aseModel.omegaMax;
 rho = aseModel.rho;
-u = aseModel.u';
-q = 0.5*rho*u.*u;
+q = aseModel.q';
 
-nSpeeds = length(u);
+nSpeeds = length(q);
 nStates = size(A,1);
 nInputs = size(Bc,2);
 nOutputs = size(C,1);

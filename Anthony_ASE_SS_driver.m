@@ -107,6 +107,8 @@ flapCorrections(2) = 0.7; % ail2
 flapCorrections(3) = 0.6; % elev
 flapCorrections(4) = 4; % vane
 
+%% 
+
 %% INTERMEDIATE VARIABLES
 
 % stiffness matrix replacement
@@ -256,6 +258,3 @@ dataObjs = margeComputeFRF(sys,q,omegaVec,'ASE_SS');
 % plot FRFs against experiment
 margeResponse
 margeFreqExperiment
-
-% compute error from experiment
-% residual = margeCompareFRF(dataObjs);
