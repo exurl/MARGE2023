@@ -210,7 +210,7 @@ for idxSpeed = 1:nSpeeds
     T21 = -invMbarbarss*Kbarbarss;
     T22 = -invMbarbarss*Cbarbarss;
     if(nLag>0)
-        T2r = -q(idxSpeed)*invMbarbarss*Ir;
+        T2r = q(idxSpeed)*invMbarbarss*Ir;
     else
         T2r = [];
     end
