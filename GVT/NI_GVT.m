@@ -2,6 +2,8 @@
 % Author: Anthony Su
 % Date: 2023-05-20
 
+% Run this script to take GVT data
+
 close all
 clear all
 

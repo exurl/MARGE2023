@@ -61,7 +61,8 @@ nodeMassTail(2) = nodeMassTail(2)+0.5/100*2.54;
 wing_xyz = [wing_xyz;nodeMassTail];
 
 % plot wing
-figure
+fig = figure;
+fig.Position = [10,10,800,600];
 border_ids = [1001,2001,2002,4001,4002,2023,2024,4003,4004,2024,2023,2823,2802,2002,2001,3001,3002,3202,3208,3808,3802,3002];
 x_ = [];
 y_ = [];
@@ -72,10 +73,10 @@ for idx = 1:length(border_ids)
 end
 plot(x_,y_,'k-')
 hold on
-axis equal
 ax = gca;
-xlim([ax.XLim(1)-0.05*(ax.XLim(2)-ax.XLim(1)),ax.XLim(2)+0.05*(ax.XLim(2)-ax.XLim(1))]);
-ylim([ax.YLim(1)-0.05*(ax.YLim(2)-ax.YLim(1)),ax.YLim(2)+0.05*(ax.YLim(2)-ax.YLim(1))]);
+axis equal
+xlim([-0.1,0.9])
+ylim([-0.1,0.6])
 
 % isolate tested nodes
 GVT1_ids = sort([2014,2020,2024,1017,1034]);
@@ -96,12 +97,32 @@ end
 plot(GVT1_nodes(:,2),GVT1_nodes(:,3),'bo','MarkerSize',6,'DisplayName','dataset 1')
 plot(GVT2_nodes(:,2),GVT2_nodes(:,3),'r*','MarkerSize',6,'DisplayName','dataset 2')
 
+% plot tested node names
+rotation = 30;
+for idx = 1:length(GVT1_ids)
+    name_ = ['  ',char(string(GVT1_nodes(idx,1)))];
+    x_ = GVT1_nodes(idx,2);
+    y_ = GVT1_nodes(idx,3);
+    txt_ = text(x_,y_,name_);
+    txt_.Rotation = rotation;
+end
+for idx = 1:length(GVT2_ids)
+    name_ = ['  ',char(string(GVT2_nodes(idx,1)))];
+    x_ = GVT2_nodes(idx,2);
+    y_ = GVT2_nodes(idx,3);
+    txt_ = text(x_,y_,name_);
+    txt_.Rotation = rotation;
+end
+
 ax = gca;
 % set(ax,'position',[0 0 1 1])
 % set(ax,'XTick',[])
 % set(ax,'YTick',[])
 
-legend([ax.Children(2),ax.Children(1)])
+% flip y-axis
+set(ax,'ydir','reverse')
+
+legend([ax.Children(end-1),ax.Children(end-2)],'Location','southeast')
 xlabel('meters')
 ylabel('meters')
 
