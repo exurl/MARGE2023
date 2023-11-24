@@ -25,20 +25,34 @@ for idxWeight = 1:length(mpWeights)
     
     %% INITIAL CONDITIONS
     
-    % initialize design variables
+    % initialize design variables to untuned result
     omega2 = 1.454401; % Hz, set to zero to ignore
-    zeta1 = 0.3*200;
+    zeta1 = 0;
     zeta2 = 0.028*1;
-    dAil1 = 0.6;
-    dAil2 = 0.7;
-    dElev = 0.6;
-    % dVane = 4;
+    dAil1 = 1;
+    dAil2 = 1;
+    dElev = 1;
     dVane = 1;
     dP = ones(2,2,3);
-    dP(1,1,:) = 0.9;
+    dP(1,1,:) = 1;
     dP(1,2,:) = 1;
-    dP(2,1,:) = 0.5;
-    dP(2,2,:) = 1.5;
+    dP(2,1,:) = 1;
+    dP(2,2,:) = 1;
+    
+    % initialize design variables to maually tuned result
+    % omega2 = 1.454401; % Hz, set to zero to ignore
+    % zeta1 = 0.3*200;
+    % zeta2 = 0.028*1;
+    % dAil1 = 0.6;
+    % dAil2 = 0.7;
+    % dElev = 0.6;
+    % % dVane = 4;
+    % dVane = 1;
+    % dP = ones(2,2,3);
+    % dP(1,1,:) = 0.9;
+    % dP(1,2,:) = 1;
+    % dP(2,1,:) = 0.5;
+    % dP(2,2,:) = 1.5;
     
     x0 = [omega2,zeta1,zeta2,dAil1,dAil2,dElev,dVane,reshape(dP,1,[])];
     
@@ -49,13 +63,27 @@ for idxWeight = 1:length(mpWeights)
     %% REMEMBER %% | NEED TO REMOVE EXTRAPOLATION BEFORE LOOKING AT ACCELS!!! |
     %%%%%%%%%%%%%% +----------------------------------------------------------+
     
-    % inequality constraints
+    % inequality constraints v1
+    % omega2Lim = 1.454401*[0.9,1.1];
+    % zeta1Lim = [0,Inf];
+    % zeta2Lim = 0.028*[0.5,1.5];
+    % dCtrlLim = [0,1];
+    % dPLim = [0.5,1.5];
+    
+    % inequality constraints v2
     omega2Lim = 1.454401*[0.9,1.1];
     zeta1Lim = [0,Inf];
-    zeta2Lim = 0.028*[0.5,1.5];
-    dCtrlLim = [0,1];
-    dPLim = [0.5,1.5];
-    
+    zeta2Lim = 0.028*[0.2,5];
+    dCtrlLim = [0,5];
+    dPLim = [0,5];
+
+    % inequality constraints v3
+    % omega2Lim = 1.454401*[0.9,1.1];
+    % zeta1Lim = [0,Inf];
+    % zeta2Lim = 0.028*[0.2,5];
+    % dCtrlLim = [-5,5];
+    % dPLim = [-5,5];
+
     LB = [omega2Lim(1),zeta1Lim(1),zeta2Lim(1),dCtrlLim(1).*ones(1,4),dPLim(1).*ones(1,2*2*3)];
     UB = [omega2Lim(2),zeta1Lim(2),zeta2Lim(2),dCtrlLim(2).*ones(1,4),dPLim(2).*ones(1,2*2*3)];
     
@@ -89,12 +117,13 @@ margeObjective(xDatabase(5,:),1,true);
 %% PLOT RESULT
 
 % plot pareto front
-semilogx(mpWeights,magErrorDatabase,'.-')
+semilogx(mpWeights,magErrorDatabase,'.-','DisplayName','magnitude')
 hold on
-semilogx(mpWeights,phaseErrorDatabase,'.-')
+semilogx(mpWeights,phaseErrorDatabase,'.-','DisplayName','phase')
 title('MARGE Optimal Solutions')
 xlabel('ratio of magnitude/phase error weights')
 ylabel('optimal residual')
 grid on
+legend()
 ax = gca;
 ax.YLim(1) = 0;

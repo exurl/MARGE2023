@@ -2,11 +2,13 @@
 % Author: Anthony Su
 % Date: 2023-08-17
 
+% loads experimental FRFs and state-space model FRFs and plots comparison
+
 % close all
 clear all
 
 % speed indices of interest: pick which speeds to plot
-speedIdxsInterest = [1,2,3,4,5,6];
+speedIdxsInterest = [4];
 
 %% IMPORT EXPERIMENTAL DATA
 
@@ -218,7 +220,8 @@ function plotFreq(ssObjs,expObjs,q,visibility)
 
             % x-axis input label
             if (idxOut==1)
-                title(ax,expObj.title,inputNames(idxIn))
+                % title(ax,expObj.title,inputNames(idxIn))
+                title(ax,'',inputNames(idxIn))
             end
         end
     end
@@ -235,10 +238,20 @@ function plotFreq(ssObjs,expObjs,q,visibility)
     linkaxes(tl.Children,'x') % unify x-axes
 
     % grey out acc3 and pitchDot outputs which are unreliable
+    % for idxIn = 1:nInputs
+    %     for idxOut = [3,6]
+    %         ax = nexttile((idxOut-1)*nInputs+idxIn);
+    %         ax.Color = [1,0.9,0.9];
+    %     end
+    % end
+
+    % remove ticks and labels
     for idxIn = 1:nInputs
-        for idxOut = [3,6]
+        for idxOut = 1:nOutputs
             ax = nexttile((idxOut-1)*nInputs+idxIn);
-            ax.Color = [1,0.9,0.9];
+            if(idxOut<nOutputs)
+                ax.XTickLabels = [];
+            end
         end
     end
 end

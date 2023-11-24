@@ -2,6 +2,8 @@
 % Author: Anthony Su
 % Date: 2023-08-01
 
+% compute time-domain response and frequency response of MARGE state-space
+
 clear all
 format shortg
 
