@@ -8,7 +8,11 @@
 clear all
 
 % speed indices of interest: pick which speeds to plot
-speedIdxsInterest = [4];
+speedIdxsInterest = [1:6];
+
+% plot acceleromters?
+global plotAcc
+plotAcc = false;
 
 %% IMPORT EXPERIMENTAL DATA
 
@@ -175,6 +179,8 @@ function plotFreq(ssObjs,expObjs,q,visibility)
 % INPUTS: ssObjs and expObjs have fields freq, H1_FRF, H2_FRF, Hv_FRF
 % they have dims (nInputs) and internally the fields have dims (:,nOutputs)
 
+    global plotAcc
+
     % define utility variables
     nInputs = 4;
     nOutputs = 6;
@@ -187,15 +193,25 @@ function plotFreq(ssObjs,expObjs,q,visibility)
     fig.Position(2) = 0;
     fig.Position(3) = 1920;
     fig.Position(4) = 1080;
-    tl = tiledlayout(nOutputs,nInputs);
 
+    % plot accels?
+    if(plotAcc==false)
+        idxOut0 = 4;
+        accShift = -3;
+        tl = tiledlayout(nOutputs-3,nInputs);
+    else
+        idxOut0 = 1;
+        accShift = 0;
+        tl = tiledlayout(nOutputs,nInputs);
+    end
+    
     % plot data
     for idxIn = 1:nInputs
         expObj = expObjs(idxIn);
         ssObj = ssObjs(idxIn);
-        for idxOut = 1:nOutputs
+        for idxOut = idxOut0:nOutputs
             % initialize axes
-            ax = nexttile((idxOut-1)*nInputs+idxIn);
+            ax = nexttile((idxOut+accShift-1)*nInputs+idxIn);
             
             % plot experiment
             % plot(expObj.freq(:,idxOut),abs(expObj.Hv_FRF(:,idxOut)),'-k','DisplayName','experiment')
@@ -223,6 +239,11 @@ function plotFreq(ssObjs,expObjs,q,visibility)
                 % title(ax,expObj.title,inputNames(idxIn))
                 title(ax,'',inputNames(idxIn))
             end
+
+            % remove excess ticks, labels
+            if(idxOut<nOutputs)
+                ax.XTickLabels = [];
+            end
         end
     end
 
@@ -245,13 +266,4 @@ function plotFreq(ssObjs,expObjs,q,visibility)
     %     end
     % end
 
-    % remove ticks and labels
-    for idxIn = 1:nInputs
-        for idxOut = 1:nOutputs
-            ax = nexttile((idxOut-1)*nInputs+idxIn);
-            if(idxOut<nOutputs)
-                ax.XTickLabels = [];
-            end
-        end
-    end
 end
