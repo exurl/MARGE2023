@@ -271,7 +271,8 @@ function [residual,magError,phaseError] = margeObjective(x,mpWeight,wantSave)
 
     % compute residual
     error = magError*sqrt(mpWeight) + phaseError/sqrt(mpWeight);
-    residual = norm(error,'fro');
+    % residual = norm(error,'fro');
+    residual = sum(abs(error),'all');
 
     % easy-read error return
     % error = reshape([sum(abs(error),1)],6,4,6);
