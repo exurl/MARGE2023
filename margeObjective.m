@@ -4,7 +4,7 @@
 
 % converted from Anthony_ASE_SS_driver.m into a function on 10-24-2023
 
-function [residual,magError,phaseError] = margeObjective(x,mpWeight,wantSave)
+function [residual,magError,phaseError] = margeObjective(x,mpWeight,wantSave,ns,nLag)
 % INPUTS
     % x        : vector of tuning parameters
         % x(1) : bending natural frequency (Hz)
@@ -26,7 +26,8 @@ function [residual,magError,phaseError] = margeObjective(x,mpWeight,wantSave)
 
     %% INDEPENDENT VARIABLES/PARAMETERS
 
-    persistent nastranInputDir NS NC ns nc zeta gusts b nLag nLagG rho q g accIds strainId pitchId
+    % persistent nastranInputDir NS NC ns nc zeta gusts b nLag nLagG rho q g accIds strainId pitchId
+    persistent nastranInputDir NS NC nc zeta gusts b nLagG rho q g accIds strainId pitchId
     
     if(isempty(nastranInputDir))
         % NASTRAN data folder
@@ -37,7 +38,7 @@ function [residual,magError,phaseError] = margeObjective(x,mpWeight,wantSave)
         NC = 4;
         
         % structure model parameters
-        ns = 15;
+        % ns = 15;
         nc = 4; % [ail1, ail2, elev, vane], radians
             % ^NOTE: there is no way to disable controls
         
@@ -60,7 +61,7 @@ function [residual,magError,phaseError] = margeObjective(x,mpWeight,wantSave)
         b = 0.2; % m
         
         % aero model parameters
-        nLag = 4;
+        % nLag = 4;
         nLagG = 32;
         
         % viscosity corrections
@@ -88,31 +89,28 @@ function [residual,magError,phaseError] = margeObjective(x,mpWeight,wantSave)
 
         % gusts on?
         gusts = false;
+        
         % slow input data
         nastranInputDir = 'ASEInputData_slow/';
-        nLag = 0;
+        % nLag = 0;
         nLagG = 6;
+        
         % small model (2-DOF 0-LAG)
-        ns = 2;
-        nLag = 0;
+        % ns = 2;
+        % nLag = 0;
         zeta = zeta(1:ns);
     end
 
     %% INPUT VALIDATION
-    assert(numel(x)==7+(3+nLag)*ns*ns)
+    assert(numel(x)==1+ns+4+(3+nLag)*ns*ns)
     if(~exist('wantSave','var'))
         wantSave = char([]);
     end
     
     %% EXTRACT MODEL TUNING DESIGN VARIABLES
     
-    omega2 = x(1);
-    zeta1 = x(2);
-    zeta2 = x(3);
-    flapCorrections = x(4:7);
-    aeroCorrections = reshape(x(8:end),2,2,[]);
-    
     % ==== NATURAL FREQUENCY REPLACEMENT ====
+    omega2 = x(1);
     omegan = zeros(1,ns+nc); % Hz
     % pitching frequency
     % omegan(1) = 
@@ -120,16 +118,15 @@ function [residual,magError,phaseError] = margeObjective(x,mpWeight,wantSave)
     omegan(2) = omega2;
     
     % ==== DAMPING RATIO SCALING ====
-    % pitching damping
-    zeta(1) = zeta1;
-    % bending damping
-    zeta(2) = zeta2;
+    zeta(1:ns) = x(2:ns+1);
     
     % ==== AERODYNAMICS ====
-    % static aero corrections
-    % aeroCorrections =
     % control surface aero corrections
-    % flapCorrections =
+    flapCorrections = x(ns+2:ns+5);
+
+    % static aero corrections
+    aeroCorrections = reshape(x(ns+6:end),ns,ns,[]);
+    
     
     %% INTERMEDIATE VARIABLES
     

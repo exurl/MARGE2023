@@ -7,11 +7,14 @@ clear all
 clc
 
 % initialize 
-mpWeights = logspace(-2,2,9);
+% mpWeights = logspace(-2,2,9);
+mpWeights = 1
+ns = 2
+nLag = 0
 resDatabase = zeros(size(mpWeights));
 magErrorDatabase = zeros(size(mpWeights));
 phaseErrorDatabase = zeros(size(mpWeights));
-xDatabase = zeros(length(mpWeights),19);
+xDatabase = zeros(length(mpWeights),1+ns+4+(nLag+3)*ns*ns);
 
 for idxWeight = 1:length(mpWeights)
 
@@ -21,19 +24,20 @@ for idxWeight = 1:length(mpWeights)
     mpWeight = mpWeights(idxWeight);
     
     % anonymous objective function which incorporates the mpWeight
-    objectiveFunction = @(x) margeObjective(x,mpWeight);
+    objectiveFunction = @(x) margeObjective(x,mpWeight,false,ns,nLag);
     
     %% INITIAL CONDITIONS
+    zeta(1:9) = [0,0.028,0.042,0.030,0.112,0.031,0.018,0.022,0.032];
     
     % initialize design variables to untuned result
     omega2 = 1.454401; % Hz, set to zero to ignore
-    zeta1 = 0;
-    zeta2 = 0.028*1;
+    zeta(1) = 0;
+    zeta(2) = 0.028*1;
     dAil1 = 1;
     dAil2 = 1;
     dElev = 1;
     dVane = 1;
-    dP = ones(2,2,3);
+    dP = ones(ns,ns,3+nLag);
     dP(1,1,:) = 1;
     dP(1,2,:) = 1;
     dP(2,1,:) = 1;
@@ -41,20 +45,21 @@ for idxWeight = 1:length(mpWeights)
     
     % initialize design variables to maually tuned result
     % omega2 = 1.454401; % Hz, set to zero to ignore
-    % zeta1 = 0.3*200;
-    % zeta2 = 0.028*1;
+    % zeta(1) = 0.3*200;
+    % zeta(2) = 0.028*1;
     % dAil1 = 0.6;
     % dAil2 = 0.7;
     % dElev = 0.6;
     % % dVane = 4;
     % dVane = 1;
-    % dP = ones(2,2,3);
+    % dP = ones(ns,ns,3+nLag);
     % dP(1,1,:) = 0.9;
     % dP(1,2,:) = 1;
     % dP(2,1,:) = 0.5;
     % dP(2,2,:) = 1.5;
     
-    x0 = [omega2,zeta1,zeta2,dAil1,dAil2,dElev,dVane,reshape(dP,1,[])];
+    zeta = zeta(1:ns)
+    x0 = [omega2,zeta,dAil1,dAil2,dElev,dVane,reshape(dP,1,[])];
     
     % compute initial residual
     [residual0,magError0,phaseError0] = objectiveFunction(x0);
@@ -69,13 +74,13 @@ for idxWeight = 1:length(mpWeights)
     % zeta2Lim = 0.028*[0.5,1.5];
     % dCtrlLim = [0,1];
     % dPLim = [0.5,1.5];
-    
+
     % inequality constraints v2
-    omega2Lim = 1.454401*[0.9,1.1];
-    zeta1Lim = [0,Inf];
-    zeta2Lim = 0.028*[0.2,5];
-    dCtrlLim = [0,5];
-    dPLim = [0,5];
+    % omega2Lim = 1.454401*[0.9,1.1];
+    % zeta1Lim = [0,Inf];
+    % zeta2Lim = 0.028*[0.2,5];
+    % dCtrlLim = [0,5];
+    % dPLim = [0,5];
 
     % inequality constraints v3
     % omega2Lim = 1.454401*[0.9,1.1];
@@ -84,8 +89,24 @@ for idxWeight = 1:length(mpWeights)
     % dCtrlLim = [-5,5];
     % dPLim = [-5,5];
 
-    LB = [omega2Lim(1),zeta1Lim(1),zeta2Lim(1),dCtrlLim(1).*ones(1,4),dPLim(1).*ones(1,2*2*3)];
-    UB = [omega2Lim(2),zeta1Lim(2),zeta2Lim(2),dCtrlLim(2).*ones(1,4),dPLim(2).*ones(1,2*2*3)];
+    % inequality constraints v4 (used in optimization studies)
+    omega2Lim = 1.454401*[0.9,1.1];
+    zeta1Lim = [0,Inf];
+    zeta2Lim = 0.028*[0.5,1.5];
+    zetaLim = [zeta1Lim',zeta2Lim'] 
+    dCtrlLim = [0,1];
+    dPLim = [0,Inf];
+
+    % no inequality constraints
+    % omega2Lim = [-Inf,Inf];
+    % % zeta1Lim = [-Inf,Inf];
+    % % zeta2Lim = [-Inf,Inf];
+    % zetaLim = [-Inf,Inf]*ones(1,ns);
+    % dCtrlLim = [-Inf,Inf];
+    % dPLim = [-Inf,Inf];
+
+    LB = [omega2Lim(1),zetaLim(1,:),dCtrlLim(1).*ones(1,4),dPLim(1).*ones(1,ns*ns*(3+nLag))];
+    UB = [omega2Lim(2),zetaLim(2,:),dCtrlLim(2).*ones(1,4),dPLim(2).*ones(1,ns*ns*(3+nLag))];
     
     % optimization
     opt = optimoptions('fmincon','UseParallel',true,'Display','final-detailed');
@@ -93,7 +114,7 @@ for idxWeight = 1:length(mpWeights)
 
     % store result
     xDatabase(idxWeight,:) = xNew';
-    [residualNew,magError,phaseError] = margeObjective(xNew,mpWeight);
+    [residualNew,magError,phaseError] = objectiveFunction(xNew);
     magErrorDatabase(idxWeight) = norm(magError,'fro');
     phaseErrorDatabase(idxWeight) = norm(phaseError,'fro');
 
@@ -109,21 +130,30 @@ for idxWeight = 1:length(mpWeights)
 
 end
 
-%% SAVE MODEL
+%% SAVE MODEL TO ASE_SS.mat
 
 % save final model at equal weighting
-margeObjective(xDatabase(5,:),1,true);
+% margeObjective(xDatabase(5,:),1,true);
+
+% save final model (when using only one weight)
+[residual,magError,phaseError] = margeObjective(xDatabase(1,:),mpWeight,true,ns,nLag);
+magError = sum(magError,'all')
+phaseError = sum(phaseError,'all')
+residual
 
 %% PLOT RESULT
 
 % plot pareto front
-semilogx(mpWeights,magErrorDatabase,'.-','DisplayName','magnitude')
-hold on
-semilogx(mpWeights,phaseErrorDatabase,'.-','DisplayName','phase')
-title('MARGE Optimal Solutions')
-xlabel('ratio of magnitude/phase error weights')
-ylabel('optimal residual')
-grid on
-legend()
-ax = gca;
-ax.YLim(1) = 0;
+% semilogx(mpWeights,magErrorDatabase,'.-','DisplayName','magnitude')
+% hold on
+% semilogx(mpWeights,phaseErrorDatabase,'.-','DisplayName','phase')
+% title('MARGE Optimal Solutions')
+% xlabel('ratio of magnitude/phase error weights')
+% ylabel('optimal residual')
+% grid on
+% legend()
+% ax = gca;
+% ax.YLim(1) = 0;
+
+% plot FRFs comparison
+% margeFreqExperiment
