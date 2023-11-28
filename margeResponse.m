@@ -4,7 +4,7 @@
 
 % compute time-domain response and frequency response of MARGE state-space
 
-clear all
+% clear all
 format shortg
 
 %% IMPORTING

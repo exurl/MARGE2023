@@ -1,10 +1,14 @@
+% Title: Model and Plots from {x}
+% Author: Anthony Su
+% Date: 2023-11-27
+
 % Title: Plot State-Space and Experimental FRFs Together
 % Author: Anthony Su
 % Date: 2023-08-17
 
 % loads experimental FRFs and state-space model FRFs and plots comparison
 
-% close all
+close all
 clear all
 
 % speed indices of interest: pick which speeds to plot
@@ -84,23 +88,6 @@ end
 expObjs = newExpObjs;
 clear newExpObjs
 
-%% IMPORT STATE-SPACE MODEL DATA
-
-% import
-ssSuperObjs = load('FRF_ASE_SS.mat').dataObjs; % (1)x(6) array corresponding to speeds
-
-% break each obj into 4 inputs
-for idxSpeed = speedIdxsInterest
-    for idxInput = 1:4
-        obj.freq = squeeze(ssSuperObjs(idxSpeed).freq(:,idxInput,:));
-        obj.H1_FRF = squeeze(ssSuperObjs(idxSpeed).H1_FRF(:,idxInput,:));
-        obj.H2_FRF = squeeze(ssSuperObjs(idxSpeed).H2_FRF(:,idxInput,:));
-        obj.Hv_FRF = squeeze(ssSuperObjs(idxSpeed).Hv_FRF(:,idxInput,:));
-        obj.title = ssSuperObjs(idxSpeed).title;
-        ssObjs(idxInput,idxSpeed) = obj;
-    end
-end
-
 
 %% PLOT
 
@@ -123,63 +110,6 @@ end
 
 % plot for each speed
 for idxSpeed = speedIdxsInterest
-    % plot
-    plotFreq(ssObjs(:,idxSpeed),expObjs(:,idxSpeed),q(idxSpeed),visibility)
-
-    % save in directory
-    if(wantSave=='Y')
-        savename = [dirPath,'FRFCOMPARE_',saveName,'_q',char(num2str(q(idxSpeed))),'.png'];
-        print(savename,'-dpng','-r300')
-        disp(['saved ',savename])
-    end
-end
-
-% save plots
-% wantSave = input("SAVE PLOTS? Y/N: ",'s');
-% if(wantSave=='Y')
-%     saveName = input("TYPE THE PLOT NAMING SUFFIX FOR SAVING THIS MODEL: ",'s');
-% 
-%     % get only relevant plots
-%     rootObj = groot;
-%     figs = [rootObj.Children];
-%     for i = 1:length(figs)
-%         try
-%             figMask(i) = isequal(figs(i).Children(1).Children(1).String,{'experiment Hv FRF','model'});
-%         catch
-%             figMask(i) = false;
-%         end
-%     end
-%     figNumbers = [figs(figMask).Number];
-%     if(length(figNumbers)>6)
-%         error('too many relevant plots open; not sure which ones to save!')
-%     end
-%     figNumbers = sort(figNumbers);
-% 
-%     % create directory
-%     dirPath = ['./responsePlots/',saveName,'/'];
-%     if(~isfolder(dirPath))
-%         mkdir(dirPath);
-%     end
-% 
-%     % save in directory
-%     for idxSpeed = 1:length(speedIdxsInterest)
-%         figure(figNumbers(idxSpeed))
-%         savename = [dirPath,'FRFCOMPARE_',saveName,'_q',char(num2str(q(idxSpeed))),'.png'];
-%         print(savename,'-dpng','-r300')
-%         disp(['saved ',savename])
-%     end
-% end
-
-
-%%
-%% FUCTIONS
-%%
-
-function plotFreq(ssObjs,expObjs,q,visibility)
-% INPUTS: ssObjs and expObjs have fields freq, H1_FRF, H2_FRF, Hv_FRF
-% they have dims (nInputs) and internally the fields have dims (:,nOutputs)
-
-    global plotAcc
 
     % define utility variables
     nInputs = 4;
@@ -205,10 +135,11 @@ function plotFreq(ssObjs,expObjs,q,visibility)
         tl = tiledlayout(nOutputs,nInputs,'Padding', 'none', 'TileSpacing', 'compact');
     end
     
-    % plot data
+    %% plot data
     for idxIn = 1:nInputs
-        expObj = expObjs(idxIn);
-        ssObj = ssObjs(idxIn);
+        expObj = expObjs(idxIn,idxSpeed);
+
+        % init plot, plot experiment
         for idxOut = idxOut0:nOutputs
             % initialize axes
             ax = nexttile((idxOut+accShift-1)*nInputs+idxIn);
@@ -216,15 +147,12 @@ function plotFreq(ssObjs,expObjs,q,visibility)
             % plot experiment
             % plot(expObj.freq(:,idxOut),abs(expObj.Hv_FRF(:,idxOut)),'-k','DisplayName','experiment')
             b_ = [abs(expObj.Hv_FRF(:,idxOut)-expObj.H1_FRF(:,idxOut)),abs(expObj.Hv_FRF(:,idxOut)-expObj.H2_FRF(:,idxOut))];
-            [lineObj_,patchObj_] = boundedline(expObj.freq(:,idxOut),abs(expObj.Hv_FRF(:,idxOut)),b_,'-k');
+            [lineObj_,patchObj_] = boundedline(expObj.freq(:,idxOut),abs(expObj.Hv_FRF(:,idxOut)),b_,'-k','lineWidth',1.5);
             set(lineObj_,'DisplayName','experiment Hv FRF')
             set(patchObj_,'HandleVisibility','off')
             hold on
             % plot(expObj.freq(:,idxOut),abs(expObj.H1_FRF(:,idxOut)),'--k','DisplayName','experiment H1')
             % plot(expObj.freq(:,idxOut),abs(expObj.H2_FRF(:,idxOut)),':k','DisplayName','experiment H2')
-
-            % plot state-space model
-            plot(ssObj.freq(:,idxOut),abs(ssObj.Hv_FRF(:,idxOut)),'-r','DisplayName','model')
 
             % formatting
             grid on
@@ -235,7 +163,7 @@ function plotFreq(ssObjs,expObjs,q,visibility)
             end
 
             % x-axis input label
-            if (idxOut==1)
+            if (idxOut==idxOut0)
                 % title(ax,expObj.title,inputNames(idxIn))
                 title(ax,'',inputNames(idxIn))
             end
@@ -244,26 +172,88 @@ function plotFreq(ssObjs,expObjs,q,visibility)
             if(idxOut<nOutputs)
                 ax.XTickLabels = [];
             end
+
+            % plot models
+            modelNames = {'untuned model','manually-tuned model','optimized model','optimized model w/ N_{lag}=2','optimized model w/ N_{lag}=2 and no bounds'};
+            for idxModel = 1:5
+                ssObjs = loadSaveModel(idxModel);
+                ssObj = ssObjs(idxIn,idxSpeed);
+                % plot state-space model
+                plot(ssObj.freq(:,idxOut),abs(ssObj.Hv_FRF(:,idxOut)),'DisplayName',modelNames{idxModel})
+            end
         end
+
     end
 
     % legend
     lg  = legend(); 
-    lg.Layout.Tile = 'North'; % place to the right of the tiledlayout
+    lg.Layout.Tile = 'North'; % place above of the tiledlayout
     
     % formatting
-    title(tl,['q=',char(num2str(q))],'FontSize',24)
+    title(tl,['q=',char(num2str(q(idxSpeed)))],'FontSize',24)
     ylabel(tl,'Magnitude','FontSize',18)
     xlabel(tl,'Frequency (Hz)','FontSize',18)
     warning('off',char([])) % remove warning about linkaxes in next line
     linkaxes(tl.Children,'x') % unify x-axes
 
-    % grey out acc3 and pitchDot outputs which are unreliable
-    % for idxIn = 1:nInputs
-    %     for idxOut = [3,6]
-    %         ax = nexttile((idxOut-1)*nInputs+idxIn);
-    %         ax.Color = [1,0.9,0.9];
-    %     end
-    % end
+    % save in directory
+    if(wantSave=='Y')
+        savename = [dirPath,'FRFCOMPARE_',saveName,'_q',char(num2str(q(idxSpeed))),'.png'];
+        print(savename,'-dpng','-r300')
+        disp(['saved ',savename])
+    end
+end
+
+
+%%
+%% FUCTIONS
+%%
+
+function ssObjs = loadSaveModel(idxModel)
+% INPUTS:
+    % idxModel : select model to plot (int)
+
+    % load model
+    switch idxModel
+        case 1
+            load('optModelParams/ns2_nLag0_UNTUNED.mat')
+        case 2
+            load('optModelParams/ns2_nLag0_MANUALTUNED.mat')
+        case 3
+            load('optModelParams/ns2_nLag0_mpWeight0_boundsFin.mat')
+        case 4
+            load('optModelParams/ns2_nLag2_mpWeight0_boundsFin.mat')
+        case 5
+            load('optModelParams/ns2_nLag2_mpWeight0_boundsInf.mat')
+    end
+    
+    % unify naming systems
+    if(exist('x0','var'))
+        x = x0;
+    elseif(exist('xFinal','var'))
+        x = xFinal;
+    end
+    
+    % generate ASE_SS.mat
+    margeObjective(x,mpWeight,true,ns,nLag);
+    
+    % generate FRF_ASE_SS.mat
+    margeResponse;
+
+    % IMPORT STATE-SPACE MODEL DATA
+    % import
+    ssSuperObjs = load('FRF_ASE_SS.mat').dataObjs; % (1)x(6) array corresponding to speeds
+    
+    % break each obj into 4 inputs
+    for idxSpeed = 1:6
+    for idxInput = 1:4
+        obj.freq = squeeze(ssSuperObjs(idxSpeed).freq(:,idxInput,:));
+        obj.H1_FRF = squeeze(ssSuperObjs(idxSpeed).H1_FRF(:,idxInput,:));
+        obj.H2_FRF = squeeze(ssSuperObjs(idxSpeed).H2_FRF(:,idxInput,:));
+        obj.Hv_FRF = squeeze(ssSuperObjs(idxSpeed).Hv_FRF(:,idxInput,:));
+        obj.title = ssSuperObjs(idxSpeed).title;
+        ssObjs(idxInput,idxSpeed) = obj;
+    end
+    end
 
 end
