@@ -11,6 +11,8 @@ clc
 mpWeights = 1
 ns = 2
 nLag = 0
+x0_manual = false
+infBounds = false
 resDatabase = zeros(size(mpWeights));
 magErrorDatabase = zeros(size(mpWeights));
 phaseErrorDatabase = zeros(size(mpWeights));
@@ -29,36 +31,38 @@ for idxWeight = 1:length(mpWeights)
     %% INITIAL CONDITIONS
     zeta(1:9) = [0,0.028,0.042,0.030,0.112,0.031,0.018,0.022,0.032];
     
+    if(~x0_manual)
     % initialize design variables to untuned result
-    omega2 = 1.454401; % Hz, set to zero to ignore
-    zeta(1) = 0;
-    zeta(2) = 0.028*1;
-    dAil1 = 1;
-    dAil2 = 1;
-    dElev = 1;
-    dVane = 1;
-    dP = ones(ns,ns,3+nLag);
-    dP(1,1,:) = 1;
-    dP(1,2,:) = 1;
-    dP(2,1,:) = 1;
-    dP(2,2,:) = 1;
+        omega2 = 1.454401; % Hz, set to zero to ignore
+        zeta(1) = 0;
+        zeta(2) = 0.028*1;
+        dAil1 = 1;
+        dAil2 = 1;
+        dElev = 1;
+        dVane = 1;
+        dP = ones(ns,ns,3+nLag);
+        dP(1,1,:) = 1;
+        dP(1,2,:) = 1;
+        dP(2,1,:) = 1;
+        dP(2,2,:) = 1;
+    else
+        % initialize design variables to maually tuned result
+        omega2 = 1.454401; % Hz, set to zero to ignore
+        zeta(1) = 0.3*200;
+        zeta(2) = 0.028*1;
+        dAil1 = 0.6;
+        dAil2 = 0.7;
+        dElev = 0.6;
+        % dVane = 4;
+        dVane = 1;
+        dP = ones(ns,ns,3+nLag);
+        dP(1,1,:) = 0.9;
+        dP(1,2,:) = 1;
+        dP(2,1,:) = 0.5;
+        dP(2,2,:) = 1.5;
+    end
     
-    % initialize design variables to maually tuned result
-    % omega2 = 1.454401; % Hz, set to zero to ignore
-    % zeta(1) = 0.3*200;
-    % zeta(2) = 0.028*1;
-    % dAil1 = 0.6;
-    % dAil2 = 0.7;
-    % dElev = 0.6;
-    % % dVane = 4;
-    % dVane = 1;
-    % dP = ones(ns,ns,3+nLag);
-    % dP(1,1,:) = 0.9;
-    % dP(1,2,:) = 1;
-    % dP(2,1,:) = 0.5;
-    % dP(2,2,:) = 1.5;
-    
-    zeta = zeta(1:ns)
+    zeta = zeta(1:ns);
     x0 = [omega2,zeta,dAil1,dAil2,dElev,dVane,reshape(dP,1,[])];
     
     % compute initial residual
@@ -72,6 +76,7 @@ for idxWeight = 1:length(mpWeights)
     % omega2Lim = 1.454401*[0.9,1.1];
     % zeta1Lim = [0,Inf];
     % zeta2Lim = 0.028*[0.5,1.5];
+    % zetaLim = [zeta1Lim',zeta2Lim'] ;
     % dCtrlLim = [0,1];
     % dPLim = [0.5,1.5];
 
@@ -79,6 +84,7 @@ for idxWeight = 1:length(mpWeights)
     % omega2Lim = 1.454401*[0.9,1.1];
     % zeta1Lim = [0,Inf];
     % zeta2Lim = 0.028*[0.2,5];
+    % zetaLim = [zeta1Lim',zeta2Lim'] ;
     % dCtrlLim = [0,5];
     % dPLim = [0,5];
 
@@ -86,24 +92,25 @@ for idxWeight = 1:length(mpWeights)
     % omega2Lim = 1.454401*[0.9,1.1];
     % zeta1Lim = [0,Inf];
     % zeta2Lim = 0.028*[0.2,5];
+    % zetaLim = [zeta1Lim',zeta2Lim'] ;
     % dCtrlLim = [-5,5];
     % dPLim = [-5,5];
 
-    % inequality constraints v4 (used in optimization studies)
-    omega2Lim = 1.454401*[0.9,1.1];
-    zeta1Lim = [0,Inf];
-    zeta2Lim = 0.028*[0.5,1.5];
-    zetaLim = [zeta1Lim',zeta2Lim'] 
-    dCtrlLim = [0,1];
-    dPLim = [0,Inf];
-
-    % no inequality constraints
-    % omega2Lim = [-Inf,Inf];
-    % % zeta1Lim = [-Inf,Inf];
-    % % zeta2Lim = [-Inf,Inf];
-    % zetaLim = [-Inf,Inf]*ones(1,ns);
-    % dCtrlLim = [-Inf,Inf];
-    % dPLim = [-Inf,Inf];
+    if(~infBounds)
+        % inequality constraints v4 (used in optimization studies)
+        omega2Lim = 1.454401*[0.9,1.1];
+        zeta1Lim = [0,Inf];
+        zeta2Lim = 0.028*[0.5,1.5];
+        zetaLim = [zeta1Lim',zeta2Lim'] ;
+        dCtrlLim = [0,1];
+        dPLim = [0,Inf];
+    else
+        % no inequality constraints (used in optimization studies)
+        omega2Lim = [-Inf,Inf];
+        zetaLim = [-Inf;Inf].*ones(1,ns);
+        dCtrlLim = [-Inf,Inf];
+        dPLim = [-Inf,Inf];
+    end
 
     LB = [omega2Lim(1),zetaLim(1,:),dCtrlLim(1).*ones(1,4),dPLim(1).*ones(1,ns*ns*(3+nLag))];
     UB = [omega2Lim(2),zetaLim(2,:),dCtrlLim(2).*ones(1,4),dPLim(2).*ones(1,ns*ns*(3+nLag))];
@@ -140,6 +147,12 @@ end
 magError = sum(magError,'all')
 phaseError = sum(phaseError,'all')
 residual
+
+% save final design vector
+bndName = char(infBounds*'Inf'+~infBounds*'Fin');
+savename = ['optModelParams/ns',num2str(ns),'_nLag',num2str(nLag),'_mpWeight',num2str(log10(mpWeight)),'_bounds',bndName,'.mat'];
+xFinal = xDatabase(1,:);
+save(savename,'xFinal','residual','magError','phaseError','residual','ns','nLag','mpWeight','LB','UB')
 
 %% PLOT RESULT
 
