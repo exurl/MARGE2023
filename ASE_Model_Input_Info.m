@@ -26,7 +26,7 @@ nLagG=32;
 b=0.4/2;
 %
 % Reduced Frequencies: kbar
-load ASEInputData/k_bar.mat; kbar=k_bar;
+load ASEInputData_slow/k_bar.mat; kbar=k_bar;
 %
 % kMax  - the highest reduced frequency used for Roger RFA fitting
 kMax=max(kbar);
@@ -40,8 +40,8 @@ NK=length(kbar);
 %          Pbar ( (NS+NC)x(NS+NC), 2) is Pbar1, etc.
 % For the case of irreversible controls we use only the (NS x (NS+NC) part
 % of the matrices
-load ASEInputData/A0.mat; load ASEInputData/A1.mat; load ASEInputData/A2.mat;
-load ASEInputData/D.mat; load ASEInputData/E.mat; %load ASEInputData/R.mat
+load ASEInputData_slow/A0.mat; load ASEInputData_slow/A1.mat; load ASEInputData_slow/A2.mat;
+load ASEInputData_slow/D.mat; load ASEInputData_slow/E.mat; %load ASEInputData_slow/R.mat
 
 Pbar(:,:,1)=A0;
 Pbar(:,:,2)=A1;
@@ -56,8 +56,8 @@ end
 %          PbarG ( (NS+NC)x 1, 2) is PbarG1, etc.
 % For the case of irreversible controls we use only the (NS x 1) part
 % of the matrices
-load ASEInputData/AG0.mat; load ASEInputData/AG1.mat; load ASEInputData/AG2.mat;
-load ASEInputData/DG.mat; load ASEInputData/EG.mat; %load ASEInputData/RG.mat
+load ASEInputData_slow/AG0.mat; load ASEInputData_slow/AG1.mat; load ASEInputData_slow/AG2.mat;
+load ASEInputData_slow/DG.mat; load ASEInputData_slow/EG.mat; %load ASEInputData_slow/RG.mat
 
 PbarG(:,:,1)=AG0;
 PbarG(:,:,2)=AG1;
@@ -79,13 +79,13 @@ for i=1:nLagG
 end
 %
 % M - generalized mass matrix (NS+NC) x (NS+NC)
-load ASEInputData/MHH_T.mat; M=MHH_T;
+load ASEInputData_slow/MHH_T.mat; M=MHH_T;
 %
 % K - generalized stiffness matrix (NS+NC) x (NS+NC)
-load ASEInputData/KHH_T.mat; K=KHH_T;
+load ASEInputData_slow/KHH_T.mat; K=KHH_T;
 %
 % Eigenvactors: PHI_T N x (NS+NC) (each PHI_i is transformed into a vector {x1 y1 z1 r1 p1 q1 x2 y2 z2 r2 p2 q2 ...}')
-load ASEInputData/PHI_T.mat; PHI=PHI_T;
+load ASEInputData_slow/PHI_T.mat; PHI=PHI_T;
 %
 % zeta - vector of structural damping ratios for the structural modes. 
 %        Dimension : NS x 1
@@ -127,10 +127,10 @@ end
 %% Exact aerodynamic and gust matrices if needed
 
 % Aerodynamic Matrices: Q
-load ASEInputData/QHH_T.mat; Q=QHH_T;
+load ASEInputData_slow/QHH_T.mat; Q=QHH_T;
 
 % Gust Vectors: QG
-load ASEInputData/QHG_T.mat; QG=QHG_T;
+load ASEInputData_slow/QHG_T.mat; QG=QHG_T;
 
 for i=1:length(kbar)
 	Q_ss(:,:,i)=Q(1:NS,1:NS,i);
@@ -143,7 +143,7 @@ end
 
 %% Accelerometers (ACC): PHI_Z_ACC is the T3 displacement at the accelerometers' locations
 % Loading Grid ID and their locations
-load ASEInputData/GRID_ID_XYZ.mat;
+load ASEInputData_slow/GRID_ID_XYZ.mat;
 
 % ACC Grid ID, the order is based on the numbering in the presentation: Bay 3, Bay 4, Bay 5, Bay 6, Tip LE, Tip TE)
 GRID_ID_ACC=[];
@@ -186,7 +186,7 @@ end
 
 
 % Forces at the root FM(1:6,i) all 6 components for a mode i. Z force for all modes is FM(3,:)
-load ASEInputData/FM.mat;
+load ASEInputData_slow/FM.mat;
 
 % Calculation Process
 
@@ -215,5 +215,5 @@ load ASEInputData/FM.mat;
 % 
 % FM=FM';
 % 
-% save ASEInputData/FM_calc.mat FM
+% save ASEInputData_slow/FM_calc.mat FM
 

@@ -32,8 +32,7 @@ Dc = aseModel.Dc;
 
 omegaMax = aseModel.omegaMax;
 rho = aseModel.rho;
-u = aseModel.u';
-q = 0.5*rho*u.*u;
+q = aseModel.q;
 
 % u will represent cotrol input below
 clear u

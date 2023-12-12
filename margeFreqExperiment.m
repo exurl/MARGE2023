@@ -12,7 +12,7 @@ speedIdxsInterest = [1:6];
 
 % plot acceleromters?
 global plotAcc
-plotAcc = false;
+plotAcc = true;
 
 %% IMPORT EXPERIMENTAL DATA
 

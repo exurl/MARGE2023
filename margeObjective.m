@@ -27,7 +27,7 @@ function [residual,magError,phaseError] = margeObjective(x,mpWeight,wantSave,ns,
     %% INDEPENDENT VARIABLES/PARAMETERS
 
     % persistent nastranInputDir NS NC ns nc zeta gusts b nLag nLagG rho q g accIds strainId pitchId
-    persistent nastranInputDir NS NC nc zeta gusts b nLagG rho q g accIds strainId pitchId
+    persistent nastranInputDir NS NC nc gusts b nLagG rho q g accIds strainId pitchId
     
     if(isempty(nastranInputDir))
         % NASTRAN data folder
@@ -43,16 +43,16 @@ function [residual,magError,phaseError] = margeObjective(x,mpWeight,wantSave,ns,
             % ^NOTE: there is no way to disable controls
         
         % decoupled structure damping ratios
-        zeta=zeros(ns,1);
-        zeta(2:9) = [0.028,0.042,0.030,0.112,0.031,0.018,0.022,0.032];
+        % zeta=zeros(ns,1);
+        % zeta(2:9) = [0.028,0.042,0.030,0.112,0.031,0.018,0.022,0.032];
             % ^from GVT, see ./GVT/modalDataSummary.xlsx
         
         % wild (but conservative) guess damping for modes of unknown damping
-        zeta(1) = 0.3;
-        zeta(10:ns) = 0.01;
+        % zeta(1) = 0.3;
+        % zeta(10:ns) = 0.01;
         
         % take only zeta corresponding to ns
-        zeta = zeta(1:ns);
+        % zeta = zeta(1:ns);
         
         % do we want to model gusts?
         gusts = false;
@@ -62,11 +62,11 @@ function [residual,magError,phaseError] = margeObjective(x,mpWeight,wantSave,ns,
         
         % aero model parameters
         % nLag = 4;
-        nLagG = 32;
+        % nLagG = 32;
         
         % viscosity corrections
-        aeroCorrections = [1,1; 1,1];
-        flapCorrections = [1,1,1,1];
+        % aeroCorrections = [1,1; 1,1];
+        % flapCorrections = [1,1,1,1];
             % for [ail1, ail2, elev, vane]
         
         % flight condition
@@ -98,7 +98,7 @@ function [residual,magError,phaseError] = margeObjective(x,mpWeight,wantSave,ns,
         % small model (2-DOF 0-LAG)
         % ns = 2;
         % nLag = 0;
-        zeta = zeta(1:ns);
+        % zeta = zeta(1:ns);
     end
 
     %% INPUT VALIDATION

@@ -6,13 +6,46 @@ close all
 clear all
 clc
 
+
+ZZ1 = [2,0,1,0,0;
+    2,0,1,1,0;
+    2,0,1,1,1;
+    5,0,1,1,1;
+    2,2,1,1,1;
+    5,2,1,1,1];
+
+ZZ2 = [2,0,1e3,0,0;
+    2,0,1e3,1,0;
+    2,0,1e3,1,1;
+    5,0,1e3,1,1;
+    2,2,1e3,1,1;
+    5,2,1e3,1,1];
+
+ZZ3 = [2,0,1e-3,0,0;
+    2,0,1e-3,1,0;
+    2,0,1e-3,1,1;
+    5,0,1e-3,1,1;
+    2,2,1e-3,1,1;
+    5,2,1e-3,1,1];
+
+for i = 1:6
+    ZZ(3*i-2:3*i,:) = [ZZ1(i,:); ZZ2(i,:); ZZ3(i,:)]
+end
+
+for idxOpt = 1:height(ZZ)
+    z = ZZ(idxOpt,:);
+
+
+
+
 % initialize 
 % mpWeights = logspace(-2,2,9);
-mpWeights = 1
-ns = 2
-nLag = 0
-x0_manual = false
-infBounds = false
+ns = z(1)
+nLag = z(2)
+mpWeights = z(3)
+x0_manual = logical(z(4))
+infBounds = logical(z(5))
+
 resDatabase = zeros(size(mpWeights));
 magErrorDatabase = zeros(size(mpWeights));
 phaseErrorDatabase = zeros(size(mpWeights));
@@ -150,7 +183,8 @@ residual
 
 % save final design vector
 bndName = char(infBounds*'Inf'+~infBounds*'Fin');
-savename = ['optModelParams/ns',num2str(ns),'_nLag',num2str(nLag),'_mpWeight',num2str(log10(mpWeight)),'_bounds',bndName,'.mat'];
+x0Name = char(x0_manual*'MAN'+~x0_manual*'OG_');
+savename = ['optModelParams/ns',num2str(ns),'_nLag',num2str(nLag),'_mpWeight',num2str(log10(mpWeight)),'_bounds',bndName,'x0',x0Name,'.mat'];
 xFinal = xDatabase(1,:);
 save(savename,'xFinal','residual','magError','phaseError','residual','ns','nLag','mpWeight','LB','UB')
 
@@ -170,3 +204,13 @@ save(savename,'xFinal','residual','magError','phaseError','residual','ns','nLag'
 
 % plot FRFs comparison
 % margeFreqExperiment
+
+
+
+
+XX{idxOpt} = xFinal;
+
+end
+
+% save(['OPTVARS_1e',num2str(log10(mpWeights)),'.mat'],'XX')
+save('OPTVARS.mat','XX')

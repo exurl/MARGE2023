@@ -175,7 +175,8 @@ for idxSpeed = speedIdxsInterest
 
             % plot models
             modelNames = {'untuned model','manually-tuned model','optimized model','optimized model w/ N_{lag}=2','optimized model w/ N_{lag}=2 and no bounds'};
-            for idxModel = 1:5
+            % for idxModel = 1:5
+            for idxModel = 5
                 ssObjs = loadSaveModel(idxModel);
                 ssObj = ssObjs(idxIn,idxSpeed);
                 % plot state-space model
@@ -222,9 +223,9 @@ function ssObjs = loadSaveModel(idxModel)
         case 3
             load('optModelParams/ns2_nLag0_mpWeight0_boundsFin.mat')
         case 4
-            load('optModelParams/ns2_nLag2_mpWeight0_boundsFin.mat')
+            load('optModelParams/ns2_nLag2_mpWeight0_boundsFin.mat') % some of these are outdated
         case 5
-            load('optModelParams/ns2_nLag2_mpWeight0_boundsInf.mat')
+            load('optModelParams/ns2_nLag2_mpWeight0_boundsInfx0MAN.mat')
     end
     
     % unify naming systems
