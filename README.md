@@ -1,13 +1,14 @@
-# MARGE2023_2
+# MARGE2023
 
 Version archive of 2023 MARGE computational work, including:
 - GVT testing
 - wind tunnel testing
 - experimental data acquisition, postprocessing, visualization scripts
-- aeroservoelastic state-space model generation scripts
+- aeroservoelastic state-space model generation functions
 - aeroservoelastic state-space model simulation scripts
+- aeroservoelastic state-space model optimization scripts
 
-Note that this repo does not contain most GVT and wind tunnel data as it is too large to upload to github. Wind tunnel data can be found on the Boeing Control Collaboration shared drive.
+Note that this repo does not contain most GVT and wind tunnel data as it is too large to upload to github. Wind tunnel data can be found on the Boeing Control Collaboration shared drive. Contact Anthony for the GVT data.
 
 Scripts for making and analyzing a model
 | Name | Description |
