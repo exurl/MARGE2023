@@ -39,5 +39,5 @@ Miscellaneous scripts
 | plotMARGEnodes.m | visualize NASTRAN node locations |
 | plotMARGEnodesGVT.m | visualize GVT impact points on geometry |
 | strainCalibration.m | quick study on strain gauge output compared to linear beam theory |
-| czt_FRF.m | John's FRF generation function |
+| czt_FRF.m | John's FRF generation function (modified) |
 | sysCompareJohn.m | compare my state-space model with John's CIFER state-space model |
