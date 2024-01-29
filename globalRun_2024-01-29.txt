@@ -1,0 +1,47 @@
+ns =
+
+     2
+
+
+nLag =
+
+     2
+
+
+mpWeight =
+
+     1
+
+
+x0_manual =
+
+  logical
+
+   1
+
+
+infBounds =
+
+  logical
+
+   1
+
+
+ Num Pts                 Best       Current    Threshold        Local        Local                 
+Analyzed  F-count        f(x)       Penalty      Penalty         f(x)     exitflag        Procedure
+       0     3009       586.4                                   586.4            0    Initial Point
+     200     7246       586.4                                   586.4            0    Stage 1 Local
+     300     7347       586.4     2.195e+07         4283                              Stage 2 Search
+     400     7447       586.4     1.088e+06    1.066e+04                              Stage 2 Search
+     437    10503       586.4          3233    1.535e+04         2702            0    Stage 2 Local
+     438    13520       586.4          3121         3233         2700            0    Stage 2 Local
+     474    16556       586.4          3234         3745         2876            0    Stage 2 Local
+     475    19557       586.4          3233         3234         2902            0    Stage 2 Local
+     484    22570       586.4          3233         3233         2788            0    Stage 2 Local
+     487    25581       586.4          3225         3233         2890            0    Stage 2 Local
+     488    28587       586.4          3221         3225         2857            0    Stage 2 Local
+     500    28599       586.4          3221         3221                              Stage 2 Search
+     502    31604       586.4          3210         3221         2819            0    Stage 2 Local
+     519    34621       586.4          3193         3210         2849            0    Stage 2 Local
+     526    37646       586.4          3191         3193         2713            0    Stage 2 Local
+     537    40675       586.4          3169         3191         2802            0    Stage 2 Local
