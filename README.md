@@ -1,13 +1,14 @@
-# MARGE2023_2
+# MARGE2023
 
 Version archive of 2023 MARGE computational work, including:
 - GVT testing
 - wind tunnel testing
 - experimental data acquisition, postprocessing, visualization scripts
-- aeroservoelastic state-space model generation scripts
+- aeroservoelastic state-space model generation functions
 - aeroservoelastic state-space model simulation scripts
+- aeroservoelastic state-space model optimization scripts
 
-Note that this repo does not contain most GVT and wind tunnel data as it is too large to upload to github. Wind tunnel data can be found on the Boeing Control Collaboration shared drive.
+Note that this repo does not contain most GVT and wind tunnel data as it is too large to upload to github. Wind tunnel data can be found on the Boeing Control Collaboration shared drive. Contact Anthony for the GVT data.
 
 Scripts for making and analyzing a model
 | Name | Description |
@@ -38,5 +39,5 @@ Miscellaneous scripts
 | plotMARGEnodes.m | visualize NASTRAN node locations |
 | plotMARGEnodesGVT.m | visualize GVT impact points on geometry |
 | strainCalibration.m | quick study on strain gauge output compared to linear beam theory |
-| czt_FRF.m | John's FRF generation function |
+| czt_FRF.m | John's FRF generation function (modified) |
 | sysCompareJohn.m | compare my state-space model with John's CIFER state-space model |
