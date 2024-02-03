@@ -6,15 +6,14 @@ close all
 clear all
 clc
 
-% define optimization/model meta-parameters
-z = [2 2,1,1,1];
+rng default % enforce repeatability
 
-% initialize meta-parameters
-ns = z(1)
-nLag = z(2)
-mpWeight = z(3) % magnitude weight vs phase weight
-x0_manual = logical(z(4)) % whether to use manually tuned initial guess (as opposed to un-tuned)
-infBounds = logical(z(5)) % whether to not bound solution to physical values
+% define optimization/model meta-parameters
+ns = 2
+nLag = 2
+mpWeight = 1 % magnitude weight vs phase weight
+x0_manual = true % whether to use manually tuned initial guess (as opposed to un-tuned)
+infBounds = false % whether to not bound solution to physical values
 
 %% DEFINE OBJECTIVE FUNCTION
 
@@ -92,24 +91,36 @@ UB = [omega2Lim(2),zetaLim(2,:),dCtrlLim(2).*ones(1,4),dPLim(2).*ones(1,ns*ns*(3
 % xVar = optimvar("x",length(x0),LowerBound=LB,UpperBound=UB);
 % x0_.xVar = x0;
 % prob = optimproblem(Objective=objectiveFunction(xVar));
-% opt = optimoptions('fmincon','UseParallel',true,'Display','final-detailed');
+% opt = optimdoptions('fmincon','UseParallel',true,'Display','final-detailed');
 % ms = GlobalSearch;
 % [xNew,fval] = solve(prob,x0_,options=opt);
 
 % multiple optimization ("global") try #2
-gs = GlobalSearch('Display','iter','MaxTime',36000); % 10 hour runtime
-problem = createOptimProblem('fmincon','x0',x0,...
-'objective',objectiveFunction,'lb',LB,'ub',UB);
+gs = GlobalSearch('Display','iter','MaxTime',5000); % ~1.4 hour runtime
+% gs = GlobalSearch('Display','iter','MaxTime',1000); % 16min 40sec hour runtime
+opt = optimoptions('fmincon',UseParallel=true);
+problem = createOptimProblem('fmincon',x0=x0,...
+objective=objectiveFunction,lb=LB,ub=UB,options=opt);
 xFinal = run(gs,problem);
 
+%%
+
 % store result
-[residual,magError,phaseError] = objectiveFunction(xNew);
-magErrorNorm = sum(magError,'all');
-phaseErrorNorm = sum(phaseError,'all');
+[residual,magError,phaseError] = objectiveFunction(xFinal);
+magError = sum(magError,'all');
+phaseError = sum(phaseError,'all');
 
 %% SAVE MODEL TO ASE_SS.mat
 
 wantSave = input("Save result? (Y/N): ",'s');
+if(wantSave=='Y')
+    wantSave = true;
+    [residual,magError,phaseError] = margeObjective(xFinal,mpWeight,true,ns,nLag);
+elseif(wantSave=='N')
+    wantSave = false;
+else
+    error('wantSave must be Y or N')
+end
 
 % save final design vector
 if(wantSave)
@@ -122,4 +133,4 @@ end
 %% PLOT RESULT
 
 % plot FRFs comparison
-% margeFreqExperiment
+margeFreqExperiment

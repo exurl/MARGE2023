@@ -7,36 +7,35 @@ clear all
 clc
 
 
-ZZ1 = [2,0,1,0,0;
-    2,0,1,1,0;
-    2,0,1,1,1;
-    5,0,1,1,1;
-    2,2,1,1,1;
-    5,2,1,1,1];
+% ZZ1 = [2,0,1,0,0;
+%     2,0,1,1,0;
+%     2,0,1,1,1;
+%     5,0,1,1,1;
+%     2,2,1,1,1;
+%     5,2,1,1,1];
+% 
+% ZZ2 = [2,0,1e3,0,0;
+%     2,0,1e3,1,0;
+%     2,0,1e3,1,1;
+%     5,0,1e3,1,1;
+%     2,2,1e3,1,1;
+%     5,2,1e3,1,1];
+% 
+% ZZ3 = [2,0,1e-3,0,0;
+%     2,0,1e-3,1,0;
+%     2,0,1e-3,1,1;
+%     5,0,1e-3,1,1;
+%     2,2,1e-3,1,1;
+%     5,2,1e-3,1,1];
+% 
+% for i = 1:6
+%     ZZ(3*i-2:3*i,:) = [ZZ1(i,:); ZZ2(i,:); ZZ3(i,:)]
+% end
 
-ZZ2 = [2,0,1e3,0,0;
-    2,0,1e3,1,0;
-    2,0,1e3,1,1;
-    5,0,1e3,1,1;
-    2,2,1e3,1,1;
-    5,2,1e3,1,1];
-
-ZZ3 = [2,0,1e-3,0,0;
-    2,0,1e-3,1,0;
-    2,0,1e-3,1,1;
-    5,0,1e-3,1,1;
-    2,2,1e-3,1,1;
-    5,2,1e-3,1,1];
-
-for i = 1:6
-    ZZ(3*i-2:3*i,:) = [ZZ1(i,:); ZZ2(i,:); ZZ3(i,:)]
-end
+ZZ = [2 2,1,1,0];
 
 for idxOpt = 1:height(ZZ)
     z = ZZ(idxOpt,:);
-
-
-
 
 % initialize 
 % mpWeights = logspace(-2,2,9);
@@ -148,7 +147,7 @@ for idxWeight = 1:length(mpWeights)
     LB = [omega2Lim(1),zetaLim(1,:),dCtrlLim(1).*ones(1,4),dPLim(1).*ones(1,ns*ns*(3+nLag))];
     UB = [omega2Lim(2),zetaLim(2,:),dCtrlLim(2).*ones(1,4),dPLim(2).*ones(1,ns*ns*(3+nLag))];
     
-    % optimization
+    % % single optimization
     opt = optimoptions('fmincon','UseParallel',true,'Display','final-detailed');
     xNew = fmincon(objectiveFunction,x0,[],[],[],[],LB,UB,[],opt);
 
@@ -184,9 +183,9 @@ residual
 % save final design vector
 bndName = char(infBounds*'Inf'+~infBounds*'Fin');
 x0Name = char(x0_manual*'MAN'+~x0_manual*'OG_');
-savename = ['optModelParams/ns',num2str(ns),'_nLag',num2str(nLag),'_mpWeight',num2str(log10(mpWeight)),'_bounds',bndName,'x0',x0Name,'.mat'];
+savename = ['optModelParams/ns',num2str(ns),'_nLag',num2str(nLag),'_mpWeight',num2str(log10(mpWeight)),'_bounds',bndName,'_x0',x0Name,'.mat'];
 xFinal = xDatabase(1,:);
-save(savename,'xFinal','residual','magError','phaseError','residual','ns','nLag','mpWeight','LB','UB')
+save(savename,'x0','xFinal','residual','magError','phaseError','residual','ns','nLag','mpWeight','LB','UB')
 
 %% PLOT RESULT
 
