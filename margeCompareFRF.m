@@ -4,7 +4,7 @@
 
 % converted from margeFreqExperiment.m into a function on 10-24-2023
 
-function [magError,phaseError] = margeCompareFRF(ssObjs)
+function [magError,phaseError] = margeCompareFRF(dataObjs)
 % INPUTS
     % dataObjs : array of time+freq data objects at various flight conditions
 % OUTPUTS
@@ -14,7 +14,7 @@ function [magError,phaseError] = margeCompareFRF(ssObjs)
     nSpeeds = 6;
     nInputs = 4;
     nOutputs = 6;
-    nPoints = length(ssObjs(1).freq(:,1,1));
+    nPoints = length(dataObjs(1).freq(:,1,1));
 
     %% IMPORT EXPERIMENTAL DATA
     % do this only once when called repeatedly
@@ -118,8 +118,8 @@ function [magError,phaseError] = margeCompareFRF(ssObjs)
         % extract values
         freqExp = expObjs(idxSpeed).freq(:,idxInput,idxOutput);
         frfExp = expObjs(idxSpeed).Hv_FRF(:,idxInput,idxOutput);
-        freq = ssObjs(idxSpeed).freq(:,idxInput,idxOutput);
-        frfSS = ssObjs(idxSpeed).Hv_FRF(:,idxInput,idxOutput);
+        freq = dataObjs(idxSpeed).freq(:,idxInput,idxOutput);
+        frfSS = dataObjs(idxSpeed).Hv_FRF(:,idxInput,idxOutput);
 
         % interpolate experiment to get corresponding value
         frfExp = interp1(freqExp,frfExp,freq,'makima','extrap'); % if runtime is long try switching to linear interpolation
