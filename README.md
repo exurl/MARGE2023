@@ -22,7 +22,7 @@ Scripts for making and analyzing a model
 | margeFreqExpreriment.m | loads FRFs of state-space model (./FRF_ASE_SS.mat) and experiment (./windTunnel/wtData/FRF*) and plots comparison |
 | margeTimeExperiment.m | loads experimental time-series data (./windTunnel/wtData/TIME*) and simulates corresponding state-space response and plots comparison. Takes a few minutes to run |
 
-Scripts for optimization of a model
+Scripts for local optimization of a model
 | Name | Description |
 |---|---|
 | margeOptDriver.m | driver script for model optimization |
@@ -41,3 +41,12 @@ Miscellaneous scripts
 | strainCalibration.m | quick study on strain gauge output compared to linear beam theory |
 | czt_FRF.m | John's FRF generation function (modified) |
 | sysCompareJohn.m | compare my state-space model with John's CIFER state-space model |
+
+Global Optimization Study
+| Name | Description |
+|---|---|
+| globalOptTest.m | quick global optimization demo |
+| globalStudy/model*.mat | optimized state-space model |
+| globalStudy/params*.mat | optimized model parameters |
+| margeOptDriver_global.mat | modified version of margeOptDriver.mat for global optimization |
+| plot_FRF_compare.m | generate FRFs for multiple state-space models and plot them against experiment |
